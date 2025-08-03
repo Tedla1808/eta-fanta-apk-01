@@ -9,6 +9,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require("socket.io");
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 
 const User = require('./models/user');
 const Transaction = require('./models/transaction');
@@ -17,21 +18,26 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
+const io = new Server(server, {
+    cors: { origin: "*", methods: ["GET", "POST"] }
+});
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 const PORT = process.env.PORT || 5000;
 
+// ======== MIDDLEWARE SETUP ========
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.static(path.join(__dirname, 'public')));
+// ===================================
 
 // API ROUTES
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/game', require('./routes/gameRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
 
+// --- DATABASE CONNECTION ---
 const connectDB = async () => {
     try {
         await mongoose.connect(process.env.MONGO_URI);
@@ -66,20 +72,16 @@ io.on('connection', (socket) => {
     });
 });
 
-// ** UPDATED BOT LOGIC TO HANDLE ALL ACTIONS **
 bot.on('callback_query', async (ctx) => {
     if (String(ctx.callbackQuery.from.id) !== String(ADMIN_TELEGRAM_ID)) {
         return ctx.answerCbQuery("You are not authorized.");
     }
-    
     const [action, transactionId] = ctx.callbackQuery.data.split('_');
-    
     const transaction = await Transaction.findById(transactionId).populate('user');
     if (!transaction || transaction.status !== 'Pending') {
         await ctx.answerCbQuery('Request is already processed or invalid.');
         return ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ⚠️ Action Ignored (Already Processed) ---`);
     }
-
     const user = transaction.user;
     const userSocketId = userSockets.get(user._id.toString());
     
@@ -109,8 +111,7 @@ bot.on('callback_query', async (ctx) => {
     // --- WITHDRAWAL HANDLING ---
     else if (action === 'approve-withdraw') {
         if (user.balance < transaction.amount) {
-            await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ⚠️ ERROR: User has insufficient funds! ---`);
-            return ctx.answerCbQuery('Action failed: Insufficient funds.');
+            return ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ⚠️ ERROR: User has insufficient funds! ---`);
         }
         transaction.status = 'Completed';
         user.balance -= transaction.amount;
@@ -127,21 +128,15 @@ bot.on('callback_query', async (ctx) => {
     }
 });
 
-// Logic to handle user sharing their contact
 bot.on('contact', async (ctx) => {
     const contact = ctx.message.contact;
     const chatId = ctx.chat.id;
     const phoneNumber = contact.phone_number.replace(/\D/g, '');
-
     if (contact.user_id !== ctx.from.id) {
         return ctx.reply('For security, you can only share your own contact number using the button.');
     }
     try {
-        await User.findOneAndUpdate(
-            { phone: phoneNumber },
-            { $set: { telegramChatId: chatId } },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
+        await User.findOneAndUpdate( { phone: phoneNumber }, { $set: { telegramChatId: chatId } }, { upsert: true, new: true, setDefaultsOnInsert: true } );
         console.log(`[Bot] Linked phone ${phoneNumber} to Chat ID ${chatId}.`);
         await ctx.reply(`Thank you! Your phone number is now linked. You can return to the website and continue registration.`);
     } catch (error) {
@@ -150,12 +145,12 @@ bot.on('contact', async (ctx) => {
     }
 });
 
+// START SERVER
 const startServer = async () => {
     await connectDB();
     server.listen(PORT, () => console.log(`[SERVER] HTTP & Socket.IO server running on http://localhost:${PORT}`));
     bot.launch().then(() => console.log('[BOT] Telegram bot listener is running...'));
 };
-
 startServer();
 
 process.once('SIGINT', () => bot.stop('SIGINT'));

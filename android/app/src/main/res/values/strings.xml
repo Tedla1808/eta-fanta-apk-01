@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Eta Fanta እጣ ፋንታ</string> <!-- MODIFIED LINE -->
+    <string name="title_activity_main">Eta Fanta እጣ ፋንታ</string> <!-- Also good to change this one -->
+    <string name="package_name">com.etafanta.app</string>
+    <string name="custom_url_scheme">com.etafanta.app</string>
+</resources>
