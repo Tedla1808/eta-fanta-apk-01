@@ -9,6 +9,8 @@ const Game = require('../models/game');
 const { protect } = require('../middleware/authMiddleware');
 
 const TOTAL_BOXES = 100;
+
+// THIS IS THE CORRECT CONFIGURATION WITH ALL 6 SLOTS
 const SLOT_CONFIG = {
     slot1: { cost: 20,  commission: 0.10 },
     slot2: { cost: 50,  commission: 0.09 },
@@ -18,32 +20,21 @@ const SLOT_CONFIG = {
     slot6: { cost: 500, commission: 0.05 }
 };
 
-// =========================================================================
-// === VERSION CONTROL FOR FORCED APP UPDATES ===
-// =========================================================================
-const LATEST_APP_VERSION = '1..0'; // IMPORTANT: Increment this when you want to force all users to update.
-const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.etafanta.app'; // Your app's final Play Store URL.
-
-// This is a PUBLIC endpoint. The app must be able to call it before the user logs in.
-router.get('/version', (req, res) => {
-    res.json({
-        latestVersion: LATEST_APP_VERSION,
-        playStoreUrl: PLAY_STORE_URL
-    });
-});
-// =========================================================================
-
+// HELPER: Find the current active game for a slot, or create one if it doesn't exist.
 async function getOrCreateActiveGame(slotId, session) {
     let game = await Game.findOne({ slotId, status: 'Active' }).session(session);
     if (game) return game;
+    
     const lastGame = await Game.findOne({ slotId }).sort({ round: -1 }).session(session);
     const nextRound = lastGame ? lastGame.round + 1 : 1;
+
     game = new Game({ slotId, round: nextRound });
     await game.save({ session });
     console.log(`[Game] Created new game for ${slotId}, Round ${nextRound}`);
     return game;
 }
 
+// GET /api/game/slots
 router.get('/slots', protect, async (req, res) => {
     try {
         const slotStatus = {};
@@ -63,6 +54,7 @@ router.get('/slots', protect, async (req, res) => {
     }
 });
 
+// POST /api/game/bet
 router.post('/bet', protect, async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -70,9 +62,11 @@ router.post('/bet', protect, async (req, res) => {
         const { bets } = req.body;
         const user = await User.findById(req.user.id).session(session);
         if (!user) return res.status(404).json({ message: "User not found." });
+
         let totalCost = 0;
         const betsToCreate = [];
         const gamesInvolved = new Map();
+
         for (const slotId in bets) {
             if (!gamesInvolved.has(slotId)) {
                 gamesInvolved.set(slotId, await getOrCreateActiveGame(slotId, session));
@@ -84,22 +78,29 @@ router.post('/bet', protect, async (req, res) => {
                 betsToCreate.push({ user: req.user.id, game: game._id, slotId, boxId, cost: costPerBox });
             }
         }
+
         if (user.balance < totalCost) return res.status(400).json({ message: `Insufficient balance.` });
+        
         const conflictCheck = await Bet.findOne({ $or: betsToCreate.map(b => ({ game: b.game, boxId: b.boxId })) }).session(session);
         if (conflictCheck) throw new Error(`Sorry, at least one selection was just taken.`);
+
         user.balance -= totalCost;
         await user.save({ session });
         await Bet.insertMany(betsToCreate, { session });
+
         for (const [slotId, game] of gamesInvolved.entries()) {
             const betCount = await Bet.countDocuments({ game: game._id }).session(session);
             if (betCount >= TOTAL_BOXES) {
                 console.log(`[SETTLEMENT] Game ${game._id} for ${slotId} is full. Picking a winner...`);
                 const gameBets = await Bet.find({ game: game._id }).session(session);
                 const winningBet = gameBets[Math.floor(Math.random() * gameBets.length)];
+                
                 game.status = 'Settled';
                 game.winner = winningBet.user;
+                
                 const { cost, commission } = SLOT_CONFIG[slotId];
                 const prizeAmount = (cost * TOTAL_BOXES) * (1 - commission);
+                
                 await User.findByIdAndUpdate(winningBet.user, { $inc: { balance: prizeAmount } }).session(session);
                 await Bet.updateOne({ _id: winningBet._id }, { $set: { isWinner: true, prizeAmount: prizeAmount } }, { session });
                 await game.save({ session });
@@ -116,7 +117,8 @@ router.post('/bet', protect, async (req, res) => {
     }
 });
 
-router.get('/recent-winners', protect, async (req, res) => {
+// GET /api/game/recent-winners
+router.get('/recent-winners', async (req, res) => {
     try {
         const winners = await Bet.find({ isWinner: true }).sort({ createdAt: -1 }).limit(10).populate('user', 'phone').lean();
         res.json(winners);
