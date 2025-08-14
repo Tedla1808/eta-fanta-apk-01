@@ -1,6 +1,10 @@
-# Node.js dependencies
+# Dependencies
 /node_modules
 /backend/node_modules
+
+# Lock files from other package managers
+yarn.lock
+/backend/yarn.lock
 
 # Build output
 /android
@@ -16,15 +20,6 @@ lerna-debug.log*
 .env
 /backend/.env
 
-# IDE and OS files
-.idea
-.vscode
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-*~
-desktop.ini
-Thumbs.db
+# OS and IDE files
 .DS_Store
+.vscode
