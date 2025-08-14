@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eta Fanta (እጣ ፋንታ)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+
+    <!-- ======== HEADER COMPONENT ======== -->
+    <header id="app-header">
+        <div class="logo">
+            <a href="#" id="logo-link">Eta Fanta<br>እጣ ፋንታ</a>
+        </div>
+        <nav class="actions-area">
+            <div id="logged-out-view">
+                <button class="btn btn-primary" id="register-btn-header" data-lang-key="register">Register</button>
+            </div>
+            <div id="logged-in-view" class="hidden">
+                <div class="user-info-display">
+                    <span id="user-phone-display">+2519...1234</span>
+                    (<span id="user-balance-display">0.00 ETB</span>)
+                </div>
+                <button id="deposit-btn" class="btn btn-header-action" data-lang-key="deposit">Deposit</button>
+                <button id="settings-btn" class="btn btn-header-action" data-lang-key="settings">Settings</button>
+                <button id="logout-btn" class="btn btn-header-action btn-logout" data-lang-key="logout">Logout</button>
+            </div>
+            <select id="language-selector">
+                <option value="en">English</option>
+                <option value="am">አማርኛ</option>
+                <option value="om">Afaan Oromoo</option>
+            </select>
+        </nav>
+    </header>
+
+    <!-- ======== MAIN CONTENT & SCREENS ======== -->
+    <main id="app-main">
+        <section id="home-screen" class="app-screen active">
+            <button class="btn btn-primary btn-extra-large pulse" id="main-action-btn" data-lang-key="play">PLAY</button>
+        </section>
+        <section id="betting-screen" class="app-screen hidden">
+            <div class="betting-layout">
+                <div class="slots-main-area">
+                    <h2 data-lang-key="chooseSlot">Choose a Slot</h2>
+                    <div class="slots-container">
+                        <button class="slot-btn" data-slot-id="1"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 1</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="2"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 2</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="3"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 3</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="4"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 4</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="5"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 5</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="6"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 6</div><div class="slot-fullness-display">0% Full</div></button>
+                    </div>
+                    <div class="bet-controls">
+                        <div class="amount-display"><span data-lang-key="amountToBet">Amount to Bet:</span><span id="total-bet-amount">0.00 ETB</span></div>
+                        <button class="btn btn-secondary" id="clear-bet-btn">Clear Bet</button>
+                        <button class="btn btn-primary" id="place-bet-btn" data-lang-key="placeBet">Place Bet</button>
+                    </div>
+                </div>
+                <aside class="winners-sidebar"><h3 data-lang-key="recentWinners">Recent Winners</h3><ul id="recent-winners-list"></ul></aside>
+            </div>
+        </section>
+
+        <!-- ** UPDATE SCREEN ** -->
+        <section id="update-screen" class="app-screen hidden">
+            <div class="update-container">
+                <h2>Update Required</h2>
+                <p>A new version of Eta Fanta is available. Please update to continue playing.</p>
+                <button id="update-now-btn" class="btn btn-primary">Update Now</button>
+            </div>
+        </section>
+    </main>
+    
+    <!-- ======== FOOTER COMPONENT ======== -->
+    <footer id="app-footer">
+        <span data-lang-key="contactUs">Contact us:</span>
+        <a href="mailto:etafanta.awaqi@gmail.com">etafanta.awaqi@gmail.com</a>
+        <a href="http://www.etafanta.com" target="_blank">www.etafanta.com</a>
+    </footer>
+
+    <!-- ======== MODALS ======== -->
+    <div id="register-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><div id="register-step-1"><h2 data-lang-key="createAccount">Create Your Account</h2><label data-lang-key="userIdPhone">User ID (Phone Number)</label><div class="phone-input-group"><select id="country-code-register"><option value="+251" selected>ET (+251)</option><option value="+254">KE (+254)</option><option value="+255">TZ (+255)</option><option value="+256">UG (+256)</option><option value="+250">RW (+250)</option><option value="+243">DRC (+243)</option><option value="+258">MZ (+258)</option><option value="+252">SO (+252)</option></select><input type="tel" id="phone-register" placeholder="XXXXXXXXX"></div><button class="btn btn-primary" id="continue-to-telegram-btn">Continue</button></div><div id="register-step-1b" class="hidden"><h2>Connect to Telegram</h2><p>To receive your OTP...</p><a href="https://t.me/etafantaAuthbot" target="_blank" class="btn btn-secondary" id="telegram-bot-link">1. Open Bot</a><button class="btn btn-primary" id="check-telegram-btn">2. I have sent the message</button></div><div id="register-step-2" class="hidden"><h2>Enter Verification Code</h2><p>We've sent a code to your Telegram account.</p><input type="text" id="otp-input" placeholder="_ _ _ _ _ _" maxlength="6"><button class="btn btn-primary" id="verify-otp-btn">Verify Code</button></div><div id="register-step-3" class="hidden"><h2>Set Your Password</h2><input type="password" id="password-register" placeholder="Password"><input type="password" id="confirm-password-register" placeholder="Confirm Password"><p id="password-error" class="error-text hidden"></p><button class="btn btn-primary" id="save-password-btn">Save</button></div></div></div>
+    <div id="login-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><h2 data-lang-key="login">Login</h2><label data-lang-key="userIdPhone">User ID (Phone Number)</label><div class="phone-input-group"><select id="country-code-login"><option value="+251" selected>ET (+251)</option><option value="+254">KE (+254)</option><option value="+255">TZ (+255)</option><option value="+256">UG (+256)</option><option value="+250">RW (+250)</option><option value="+243">DRC (+243)</option><option value="+258">MZ (+258)</option><option value="+252">SO (+252)</option></select><input type="tel" id="phone-login" placeholder="XXXXXXXXX"></div><label data-lang-key="password">Password</label><div class="password-input-group"><input type="password" id="password-login"><i class="fa-solid fa-eye-slash" id="toggle-password"></i></div><div class="login-options"><a href="#" id="forgot-password-link">Forgot password?</a><div><input type="checkbox" id="remember-me-check"><label for="remember-me-check">Remember Me</label></div></div><div class="terms-agreement"><input type="checkbox" id="terms-check" required><label for="terms-check">I agree to the <a href="https://brown-lilian-45.tiiny.site/Terms-and-Conditions.pdf" target="_blank">Terms and Conditions</a></label></div><button class="btn btn-primary" id="login-btn-modal">Login</button><div class="modal-switch-link">Don't have an account? <a href="#" id="go-to-register-link">Register here</a></div></div></div>
+    <div id="forgot-password-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><h2 data-lang-key="resetPassword">Reset Password</h2><label data-lang-key="userIdPhone">User ID (Phone Number)</label><div class="phone-input-group"><select id="country-code-reset"><option value="+251" selected>ET (+251)</option><option value="+254">KE (+254)</option><option value="+255">TZ (+255)</option><option value="+256">UG (+256)</option><option value="+250">RW (+250)</option><option value="+243">DRC (+243)</option><option value="+258">MZ (+258)</option><option value="+252">SO (+252)</option></select><input type="tel" id="phone-reset" placeholder="XXXXXXXXX"></div><button class="btn btn-primary" id="send-new-password-btn">Send New Password</button></div></div>
+    <div id="deposit-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><h3>Deposit Funds</h3><p>Deposit To:</p><div class="deposit-details"><p><strong>Telebirr</p></strong> Name:</strong> Tedla</p><p><strong>Phone:</strong> +251976518199</p><p class="coming-soon-note">M-PESA coming soon</p></div><button class="btn btn-primary" id="i-have-deposited-btn">I Have Deposited</button></div></div>
+    <div id="deposit-verification-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><h3>Verify Your Deposit</h3><label for="depositor-phone-input">Depositor Phone Number</label><input type="tel" id="depositor-phone-input" placeholder="+2519..."><label for="deposit-amount-input">Exact Amount Deposited</label><input type="number" id="deposit-amount-input" placeholder="e.g., 500"><button class="btn btn-primary" id="verify-deposit-btn">Verify</button><p class="warning-note">Warning: Put the exact amount and the phone number you used to make the deposit.</p></div></div>
+    <div id="betting-grid-modal" class="modal-overlay hidden"><div class="modal-content modal-large"><span class="close-modal-btn">×</span><h2 id="betting-grid-title">Slot 1 - Bet Grid</h2><div id="betting-grid-container" class="betting-grid"></div><button class="btn btn-primary close-modal-btn" id="done-betting-btn">Done</button></div></div>
+    
+    <div id="settings-modal" class="modal-overlay hidden">
+        <div class="modal-content modal-xl">
+            <span class="close-modal-btn">×</span>
+            <div class="settings-layout">
+                <nav class="settings-tabs">
+                    <button class="tab-link active" data-tab="profile"><i class="fa-solid fa-id-card"></i> <span>Profile</span></button>
+                    <button class="tab-link" data-tab="withdrawal"><i class="fa-solid fa-money-bill-wave"></i> <span>Withdrawal</span></button>
+                    <button class="tab-link" data-tab="transaction-history"><i class="fa-solid fa-money-bill-transfer"></i> <span>Transactions</span></button>
+                    <button class="tab-link" data-tab="about"><i class="fa-solid fa-info-circle"></i> <span>About</span></button>
+                </nav>
+                <div class="settings-content">
+                    <div id="tab-profile" class="tab-content active">
+                        <h3>Profile Settings</h3>
+                        <input type="text" placeholder="Full Name" id="full-name-input"><button class="btn btn-primary" id="save-profile-btn">Save Changes</button><hr>
+                        <h3>Change Password</h3>
+                        <input type="password" id="current-password" placeholder="Current Password"><input type="password" id="new-password" placeholder="New Password"><input type="password" id="confirm-new-password" placeholder="Confirm New Password">
+                        <p id="change-password-error" class="error-text hidden"></p><button class="btn btn-primary" id="change-password-btn">Change Password</button>
+                    </div>
+                    <div id="tab-withdrawal" class="tab-content">
+                         <h3>Manage Withdrawal Method</h3>
+                         <input type="text" placeholder="Account Name" id="withdrawal-account-name"><input type="text" placeholder="Phone Number" id="withdrawal-account-phone"><select id="withdrawal-provider"><option>telebirr</option><option>M-Pesa</option></select>
+                         <button class="btn btn-primary" id="save-withdrawal-method-btn">Save Method</button><hr>
+                         <h3>Request Withdrawal</h3>
+                         <p>Available: <span id="withdrawal-balance">0.00 ETB</span></p>
+                         <input type="number" placeholder="Amount to withdraw" id="withdrawal-amount-input">
+                         <button class="btn btn-primary" id="request-withdrawal-btn">Request Withdrawal</button>
+                    </div>
+                    <div id="tab-transaction-history" class="tab-content">
+                         <h3>Transaction History (Last 30 Days)</h3>
+                         <div class="table-container"><table class="history-table"><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead><tbody id="transaction-history-table-body"></tbody></table></div>
+                    </div>
+                    <div id="tab-about" class="tab-content">
+                        <h3>About Eta Fanta</h3><p>Version: 1.0.0</p><p>Contact: support@fenta.com</p>
+                        <a href="https://brown-lilian-45.tiiny.site/Terms-and-Conditions.pdf" target="_blank">Terms and Conditions</a>
+                        <a href="https://brown-lilian-45.tiiny.site/Privacy-Policy.pdf" target="_blank">Privacy Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-notification" class="hidden"></div>
+    <script src="script.js"></script>
+
+</body>
+</html>
