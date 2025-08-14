@@ -1,7 +1,7 @@
 {
   "appId": "com.awaqi.app",
-  "appName": "Eta Fanta",
-  "webDir": "www",
+  "appName": "Eta Fanta እጣ ፋንታ",
+  "webDir": "public",
   "server": {
     "androidScheme": "https"
   }
