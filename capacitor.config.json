@@ -1,0 +1,8 @@
+{
+  "appId": "com.awaqi.app",
+  "appName": "Eta Fanta",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}
