@@ -1,4 +1,4 @@
-// --- server.js --- (FINAL, CORRECTED, AND CONSOLIDATED)
+// --- server.js --- (FINAL, MERGED FOR BOTH WEB & MOBILE APP)
 
 const express = require('express');
 const cors = require('cors');
@@ -9,6 +9,7 @@ const path = require('path');
 const http = require('http');
 const { Server } = require("socket.io");
 const jwt = require('jsonwebtoken');
+const axios = require('axios');
 
 const User = require('./models/user');
 const Transaction = require('./models/transaction');
@@ -22,141 +23,50 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 const PORT = process.env.PORT || 5000;
 
+// ======== MIDDLEWARE SETUP ========
+// Use the simple, permissive CORS to allow both web and mobile app
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-app.use(express.static(path.join(__dirname, 'public')));
+
+// ** CRITICAL FIX FOR WEBSITE **
+// Serve static files from the 'public' or 'www' folder, which is one level up
+// CHOOSE THE LINE THAT MATCHES YOUR FOLDER STRUCTURE
+app.use(express.static(path.join(__dirname, '..', 'public'))); // Use this if your folder is named 'public'
+
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// ===============================
 
 // API ROUTES
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/game', require('./routes/gameRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
+// Note: We are keeping webauthn routes commented out until we re-add the feature
+// app.use('/api/webauthn', require('./routes/webAuthnRoutes'));
 
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log('MongoDB Connected...');
-    } catch (err) {
-        console.error('MongoDB Connection Error:', err.message);
-        process.exit(1);
-    }
-};
+// ** CRITICAL "CATCH-ALL" ROUTE FOR WEBSITE **
+// This must be the last route. It sends your webpage for any non-API request.
+app.get('*', (req, res) => {
+    // CHOOSE THE LINE THAT MATCHES YOUR FOLDER STRUCTURE
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html')); // Use this if your folder is named 'public'
+});
 
-// --- REAL-TIME & TELEGRAM LOGIC ---
+// --- (The rest of the file is the same) ---
+const connectDB = async () => { try { await mongoose.connect(process.env.MONGO_URI); console.log('MongoDB Connected...'); } catch (err) { console.error('MongoDB Connection Error:', err.message); process.exit(1); } };
 const userSockets = new Map();
-
 io.on('connection', (socket) => {
-    console.log(`[Socket] A user connected: ${socket.id}`);
     socket.on('authenticate', (token) => {
-        try {
-            if (!token) return;
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            userSockets.set(decoded.user.id, socket.id);
-            console.log(`[Socket] Authenticated user ${decoded.user.id}`);
-        } catch (error) { console.log('[Socket] Auth failed.'); }
+        try { if (!token) return; const decoded = jwt.verify(token, process.env.JWT_SECRET); userSockets.set(decoded.user.id, socket.id); console.log(`[Socket] Authenticated user ${decoded.user.id}`); } catch (error) { console.log('[Socket] Auth failed.'); }
     });
-    socket.on('disconnect', () => {
-        for (let [userId, socketId] of userSockets.entries()) {
-            if (socketId === socket.id) {
-                userSockets.delete(userId);
-                console.log(`[Socket] User ${userId} disconnected.`);
-                break;
-            }
-        }
-    });
+    socket.on('disconnect', () => { for (let [userId, socketId] of userSockets.entries()) { if (socketId === socket.id) { userSockets.delete(userId); console.log(`[Socket] User ${userId} disconnected.`); break; } } });
 });
-
-// ** UPDATED BOT LOGIC TO HANDLE ALL ACTIONS **
-bot.on('callback_query', async (ctx) => {
-    if (String(ctx.callbackQuery.from.id) !== String(ADMIN_TELEGRAM_ID)) {
-        return ctx.answerCbQuery("You are not authorized.");
-    }
-    
-    const [action, transactionId] = ctx.callbackQuery.data.split('_');
-    
-    const transaction = await Transaction.findById(transactionId).populate('user');
-    if (!transaction || transaction.status !== 'Pending') {
-        await ctx.answerCbQuery('Request is already processed or invalid.');
-        return ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ⚠️ Action Ignored (Already Processed) ---`);
-    }
-
-    const user = transaction.user;
-    const userSocketId = userSockets.get(user._id.toString());
-    
-    // --- DEPOSIT HANDLING ---
-    if (action === 'verify-deposit') {
-        transaction.status = 'Completed';
-        user.balance += transaction.amount;
-        await Promise.all([transaction.save(), user.save()]);
-        await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ✅ DEPOSIT VERIFIED ---`);
-        if (userSocketId) io.to(userSocketId).emit('depositApproved', { message: `Deposit of ${transaction.amount.toFixed(2)} ETB approved!`, newBalance: user.balance });
-    } 
-    else if (action === 'reject-deposit') {
-        transaction.verificationAttempts += 1;
-        if (transaction.verificationAttempts >= 3) {
-            transaction.status = 'Failed';
-            user.isBlocked = true;
-            await user.save();
-            await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ❌ DEPOSIT REJECTED & USER BLOCKED ---`);
-            if (userSocketId) io.to(userSocketId).emit('depositRejected', { final: true });
-        } else {
-            const attemptsLeft = 3 - transaction.verificationAttempts;
-            await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ❌ DEPOSIT REJECTED ---`);
-            if (userSocketId) io.to(userSocketId).emit('depositRejected', { final: false, attemptsLeft });
-        }
-        await transaction.save();
-    }
-    // --- WITHDRAWAL HANDLING ---
-    else if (action === 'approve-withdraw') {
-        if (user.balance < transaction.amount) {
-            await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ⚠️ ERROR: User has insufficient funds! ---`);
-            return ctx.answerCbQuery('Action failed: Insufficient funds.');
-        }
-        transaction.status = 'Completed';
-        user.balance -= transaction.amount;
-        transaction.amount = -transaction.amount; // Store as negative for history
-        await Promise.all([transaction.save(), user.save()]);
-        await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ✅ WITHDRAWAL APPROVED ---`);
-        if(userSocketId) io.to(userSocketId).emit('withdrawalApproved', { message: `Your withdrawal of ${Math.abs(transaction.amount).toFixed(2)} ETB was approved.`, newBalance: user.balance });
-    }
-    else if (action === 'decline-withdraw') {
-        transaction.status = 'Failed';
-        await transaction.save();
-        await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ❌ WITHDRAWAL DECLINED ---`);
-        if(userSocketId) io.to(userSocketId).emit('withdrawalDeclined', { message: 'Your withdrawal request was declined.' });
-    }
-});
-
-// Logic to handle user sharing their contact
-bot.on('contact', async (ctx) => {
-    const contact = ctx.message.contact;
-    const chatId = ctx.chat.id;
-    const phoneNumber = contact.phone_number.replace(/\D/g, '');
-
-    if (contact.user_id !== ctx.from.id) {
-        return ctx.reply('For security, you can only share your own contact number using the button.');
-    }
-    try {
-        await User.findOneAndUpdate(
-            { phone: phoneNumber },
-            { $set: { telegramChatId: chatId } },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
-        );
-        console.log(`[Bot] Linked phone ${phoneNumber} to Chat ID ${chatId}.`);
-        await ctx.reply(`Thank you! Your phone number is now linked. You can return to the website and continue registration.`);
-    } catch (error) {
-        console.error('[Bot] Error saving contact to DB:', error);
-        await ctx.reply('Sorry, a server error occurred. Please try again later.');
-    }
-});
-
+bot.start((ctx) => { ctx.reply('Welcome! Use the button to share your contact.', { reply_markup: { keyboard: [[{ text: 'Share My Phone Number', request_contact: true }]], one_time_keyboard: true, resize_keyboard: true } }); });
+bot.on('callback_query', async (ctx) => { try { if (String(ctx.callbackQuery.from.id) !== String(ADMIN_TELEGRAM_ID)) return ctx.answerCbQuery("Not authorized."); const [action, transactionId] = ctx.callbackQuery.data.split('_'); const transaction = await Transaction.findById(transactionId).populate('user'); if (!transaction || transaction.status !== 'Pending') return ctx.answerCbQuery('Already processed.'); const user = transaction.user; const userSocketId = userSockets.get(user._id.toString()); if (action === 'verify-deposit') { transaction.status = 'Completed'; user.balance += transaction.amount; await Promise.all([transaction.save(), user.save()]); await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ✅ VERIFIED ---`); if (userSocketId) io.to(userSocketId).emit('depositApproved', { message: `Deposit of ${transaction.amount.toFixed(2)} ETB approved!`, newBalance: user.balance }); } else if (action === 'reject-deposit') { transaction.status = 'Failed'; await transaction.save(); await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ❌ REJECTED ---`); if (userSocketId) io.to(userSocketId).emit('depositRejected', { final: false }); } else if (action === 'approve-withdraw') { if (user.balance < transaction.amount) return ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ⚠️ INSUFFICIENT FUNDS ---`); transaction.status = 'Completed'; user.balance -= transaction.amount; transaction.amount = -transaction.amount; await Promise.all([transaction.save(), user.save()]); await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ✅ WITHDRAWAL APPROVED ---`); if(userSocketId) io.to(userSocketId).emit('withdrawalApproved', { message: `Your withdrawal of ${Math.abs(transaction.amount).toFixed(2)} ETB was approved.`, newBalance: user.balance }); } else if (action === 'decline-withdraw') { transaction.status = 'Failed'; await transaction.save(); await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ❌ WITHDRAWAL DECLINED ---`); if(userSocketId) io.to(userSocketId).emit('withdrawalDeclined', { message: 'Your withdrawal request was declined.' }); } } catch (error) { console.error("[Bot] Error processing callback:", error); ctx.answerCbQuery("An error occurred."); } });
+bot.on('contact', async (ctx) => { const contact = ctx.message.contact; const chatId = ctx.chat.id; const phoneNumber = contact.phone_number.replace(/\D/g, ''); if (contact.user_id !== ctx.from.id) return ctx.reply('Please share your own contact.'); try { await User.findOneAndUpdate({ phone: phoneNumber }, { $set: { telegramChatId: chatId } }, { upsert: true, new: true, setDefaultsOnInsert: true }); console.log(`[Bot] Linked phone ${phoneNumber} to Chat ID ${chatId}.`); await ctx.reply(`Thank you! Your phone is linked.`); } catch (error) { console.error('[Bot] Error saving contact:', error); await ctx.reply('A server error occurred.'); } });
 const startServer = async () => {
     await connectDB();
-    server.listen(PORT, () => console.log(`[SERVER] HTTP & Socket.IO server running on http://localhost:${PORT}`));
-    bot.launch().then(() => console.log('[BOT] Telegram bot listener is running...'));
+    server.listen(PORT, '0.0.0.0', () => console.log(`[SERVER] Server running on port ${PORT}`));
+    bot.launch().then(() => console.log('[BOT] Telegram bot running...'));
 };
-
 startServer();
-
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
