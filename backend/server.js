@@ -1,4 +1,4 @@
-// --- backend/server.js --- (FINAL, CORRECTED FOR RENDER MONOREPO)
+// --- server.js --- (FINAL, CORRECTED FOR LIVE DOMAIN CORS)
 
 const express = require('express');
 const cors = require('cors');
@@ -18,40 +18,33 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-
-// ** CRITICAL CORS AND SOCKET.IO CONFIG **
-const allowedOrigins = [
-    'https://www.etafanta.com',
-    'https://etafanta.com',
-    'http://localhost', // For Capacitor mobile app
-    'http://127.0.0.1:5500', // For local testing with VS Code Live Server
-    'http://localhost:5500'   // For local testing with VS Code Live Server
-];
-const corsOptions = {
-    origin: (origin, callback) => {
-        // Allow requests from whitelisted origins AND requests with no origin (like mobile apps)
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('This origin is not allowed by the CORS policy.'));
-        }
-    }
-};
-const io = new Server(server, { cors: { origin: allowedOrigins, methods: ["GET", "POST"] } });
-app.use(cors(corsOptions)); // Use specific CORS for HTTP requests
-// ** END OF FIX **
-
-
+const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const ADMIN_TELEGRAM_ID = process.env.ADMIN_TELEGRAM_ID;
 const PORT = process.env.PORT || 5000;
 
+// ======== MIDDLEWARE SETUP ========
+// ** THIS IS THE CRITICAL CORS FIX **
+const allowedOrigins = [
+    'https://www.etafanta.com', // Your primary live domain
+    'https://etafanta.com',     // Your apex domain
+    'http://127.0.0.1:5500', 
+    'http://localhost:5500'
+];
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    }
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// ** THIS IS THE CRITICAL PATH FIX **
-// Serve static files from the 'public' directory, which is one level up from 'backend'
+// Corrected paths for serving static files from the parent 'public' directory
 app.use(express.static(path.join(__dirname, '..', 'public')));
-// Serve uploads from the 'uploads' directory, located in the root.
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // API ROUTES
