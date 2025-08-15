@@ -56,7 +56,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/game', require('./routes/gameRoutes'));
 app.use('/api/user', require('./routes/userRoutes'));
-app.use('/api/webauthn', require('./routes/webAuthnRoutes'));
+
 
 // THE "CATCH-ALL" ROUTE for Single-Page Applications
 // This must be the last route definition in your file.
