@@ -1,4 +1,4 @@
-// backend/models/user.js - UPDATED VERSION
+// backend/models/user.js - CLEANED UP
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, default: null },
     balance: { type: Number, default: 0 },
     fullName: { type: String, default: '' },
-    profilePictureUrl: { type: String, default: '' },
+    // profilePictureUrl field has been removed.
     withdrawalMethod: {
         accountName: { type: String, default: '' },
         accountPhone: { type: String, default: '' },
@@ -18,10 +18,9 @@ const userSchema = new mongoose.Schema({
     otp: { type: String, default: null },
     otpExpires: { type: Date, default: null },
     telegramChatId: { type: String, default: null },
-    isBlocked: { type: Boolean, default: false } // <-- NEW FIELD
+    isBlocked: { type: Boolean, default: false }
 }, { timestamps: true });
 
-// Hashing hook remains the same
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password') || !this.password) { return next(); }
     const salt = await bcrypt.genSalt(12);
