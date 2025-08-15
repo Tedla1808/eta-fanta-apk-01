@@ -53,7 +53,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-app.use(express.static(path.join(__dirname, '..', 'www')));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 
 // API ROUTES
@@ -64,7 +64,7 @@ app.use('/api/webauthn', require('./routes/webAuthnRoutes'));
 
 // THE "CATCH-ALL" ROUTE
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'www', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
 });
 
 // ... (The rest of the file is unchanged, paste it below for completeness)
