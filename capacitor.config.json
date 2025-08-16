@@ -1,8 +1,14 @@
 {
-  "appId": "com.awaqi.app",
-  "appName": "Eta Fanta እጣ ፋንታ",
+  "appId": "com.etafanta.app",
+  "appName": "Eta Fanta",
   "webDir": "public",
-  "server": {
-    "androidScheme": "https"
+  "cordova": {
+    "preferences": {
+      "Scheme": "app",
+      "ScrollEnabled": "false",
+      "HideKeyboardFormAccessoryBar": "true",
+      "StatusBarStyle": "lightcontent",
+      "BodyClass": "native-app"
+    }
   }
 }
