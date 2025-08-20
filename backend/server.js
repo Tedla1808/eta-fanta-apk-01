@@ -1,4 +1,4 @@
-// --- server.js --- (FINAL, CORRECTED, AND CONSOLIDATED)
+// --- server.js --- (Corrected with Bot Fixes, keeping original structure)
 
 const express = require('express');
 const cors = require('cors');
@@ -64,6 +64,33 @@ io.on('connection', (socket) => {
             }
         }
     });
+});
+
+// ** NEW HELPER FUNCTION TO SEND THE WELCOME/HELP MESSAGE **
+const sendWelcomeMessage = (ctx) => {
+    ctx.reply(
+        'Welcome to Eta Fanta! To connect your website account, please use the button below to share your phone number.', {
+            reply_markup: {
+                keyboard: [
+                    [{ text: 'Share My Phone Number', request_contact: true }]
+                ],
+                one_time_keyboard: true,
+                resize_keyboard: true
+            }
+        }
+    );
+};
+
+// ** ADDED: /start command now uses the helper **
+bot.start((ctx) => {
+    console.log(`[Bot] Received /start from user ${ctx.from.id}`);
+    sendWelcomeMessage(ctx);
+});
+
+// ** ADDED: /help command for users who get stuck **
+bot.help((ctx) => {
+    console.log(`[Bot] Received /help from user ${ctx.from.id}`);
+    sendWelcomeMessage(ctx);
 });
 
 // ** UPDATED BOT LOGIC TO HANDLE ALL ACTIONS **
@@ -152,7 +179,7 @@ bot.on('contact', async (ctx) => {
 
 const startServer = async () => {
     await connectDB();
-    server.listen(PORT, () => console.log(`[SERVER] HTTP & Socket.IO server running on http://localhost:${PORT}`));
+    server.listen(PORT, '0.0.0.0', () => console.log(`[SERVER] HTTP & Socket.IO server running on port ${PORT}`));
     bot.launch().then(() => console.log('[BOT] Telegram bot listener is running...'));
 };
 
