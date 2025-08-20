@@ -131,6 +131,9 @@ select option {
 .update-container h2 { color: var(--primary-accent); margin-bottom: 20px; }
 .update-container p { margin-bottom: 30px; line-height: 1.6; }
 .update-container .btn { width: 100%; }
+#register-step-1b .btn { display: block; width: 100%; margin-top: 15px; }
+#register-step-1b p.small-text { margin-top: 5px; }
+.slot-bet-cost { font-size: 1.1rem; font-weight: bold; color: var(--text-dark); margin: 8px 0; background-color: rgba(255, 255, 255, 0.3); padding: 4px 10px; border-radius: 4px; }
 
 @media (max-width: 768px) {
     #app-main { padding: 10px; }
@@ -154,4 +157,32 @@ select option {
     .settings-content { padding: 20px 15px; }
     .table-container { overflow-x: auto; }
     .history-table { white-space: nowrap; }
+}
+
+/* --- All previous styles from the last complete version --- */
+
+/* ... (paste all your existing CSS here) ... */
+
+/* --- NEW STYLES FOR HOME SCREEN LAYOUT --- */
+
+#home-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; /* This is the default, but let's be explicit */
+}
+
+/* This new container will manage the layout of the two buttons */
+.home-screen-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Adds space between the "Get App" and "PLAY" buttons */
+}
+
+#get-app-link {
+    padding: 12px 24px; /* A standard button size */
+    font-size: 1.2rem;
+    text-decoration: none; /* ** THIS REMOVES THE UNDERLINE ** */
+    color: var(--primary-bg); /* Ensure text color matches other primary buttons */
 }
