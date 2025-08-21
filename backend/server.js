@@ -113,10 +113,10 @@ bot.on('callback_query', async (ctx) => {
     // --- DEPOSIT HANDLING ---
     if (action === 'verify-deposit') {
         transaction.status = 'Completed';
-         user.mainBalance += transaction.amount; // Add to mainBalance
+        user.balance += transaction.amount;
         await Promise.all([transaction.save(), user.save()]);
         await ctx.editMessageText(`${ctx.callbackQuery.message.text}\n\n--- ✅ DEPOSIT VERIFIED ---`);
-        if (userSocketId) io.to(userSocketId).emit('depositApproved', { message: `Deposit of ${transaction.amount.toFixed(2)} ETB approved!`, newBalance: user.totalbalance });
+        if (userSocketId) io.to(userSocketId).emit('depositApproved', { message: `Deposit of ${transaction.amount.toFixed(2)} ETB approved!`, newBalance: user.balance });
     } 
     else if (action === 'reject-deposit') {
         transaction.verificationAttempts += 1;

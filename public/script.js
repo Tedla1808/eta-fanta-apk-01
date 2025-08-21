@@ -1,4 +1,4 @@
-// --- START OF FILE script.js --- (FINAL, CORRECTED, WITH REFERRAL SYSTEM)
+// --- START OF FILE script.js --- (FINAL, WITH SLOT RE-MAPPING LOGIC)
 
 document.addEventListener('DOMContentLoaded', () => {
     // ======== GLOBAL STATE & CONSTANTS ========
@@ -18,9 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const DOM = {
         mainActionBtn: document.getElementById('main-action-btn'), allScreens: document.querySelectorAll('.app-screen'), allModals: document.querySelectorAll('.modal-overlay'), loggedOutView: document.getElementById('logged-out-view'), loggedInView: document.getElementById('logged-in-view'), userPhoneDisplay: document.getElementById('user-phone-display'), userBalanceDisplay: document.getElementById('user-balance-display'), registerBtnHeader: document.getElementById('register-btn-header'), depositBtn: document.getElementById('deposit-btn'), settingsBtn: document.getElementById('settings-btn'), logoutBtn: document.getElementById('logout-btn'), logoLink: document.getElementById('logo-link'), registerModal: document.getElementById('register-modal'), loginModal: document.getElementById('login-modal'), forgotPasswordModal: document.getElementById('forgot-password-modal'), depositModal: document.getElementById('deposit-modal'), depositVerificationModal: document.getElementById('deposit-verification-modal'), bettingGridModal: document.getElementById('betting-grid-modal'), settingsModal: document.getElementById('settings-modal'), settingsTabs: document.querySelector('.settings-tabs'), settingsContent: document.querySelectorAll('.settings-content .tab-content'), transactionHistoryTableBody: document.getElementById('transaction-history-table-body'), iHaveDepositedBtn: document.getElementById('i-have-deposited-btn'), verifyDepositBtn: document.getElementById('verify-deposit-btn'), depositorPhoneInput: document.getElementById('depositor-phone-input'), depositAmountInput: document.getElementById('deposit-amount-input'), loginBtnModal: document.getElementById('login-btn-modal'), phoneLoginInput: document.getElementById('phone-login'), togglePasswordIcon: document.getElementById('toggle-password'), passwordLoginInput: document.getElementById('password-login'), slotsContainer: document.querySelector('.slots-container'), bettingGridContainer: document.getElementById('betting-grid-container'), bettingGridTitle: document.getElementById('betting-grid-title'), totalBetAmountEl: document.getElementById('total-bet-amount'), placeBetBtn: document.getElementById('place-bet-btn'), clearBetBtn: document.getElementById('clear-bet-btn'), registerStep1: document.getElementById('register-step-1'), registerStep1b: document.getElementById('register-step-1b'), registerStep2: document.getElementById('register-step-2'), registerStep3: document.getElementById('register-step-3'), continueToTelegramBtn: document.getElementById('continue-to-telegram-btn'), phoneRegisterInput: document.getElementById('phone-register'), countryCodeRegister: document.getElementById('country-code-register'), checkTelegramBtn: document.getElementById('check-telegram-btn'), otpInput: document.getElementById('otp-input'), verifyOtpBtn: document.getElementById('verify-otp-btn'), passwordRegisterInput: document.getElementById('password-register'), confirmPasswordRegisterInput: document.getElementById('confirm-password-register'), passwordError: document.getElementById('password-error'), savePasswordBtn: document.getElementById('save-password-btn'), changePasswordBtn: document.getElementById('change-password-btn'), currentPasswordInput: document.getElementById('current-password'), newPasswordInput: document.getElementById('new-password'), confirmNewPasswordInput: document.getElementById('confirm-new-password'), changePasswordError: document.getElementById('change-password-error'), withdrawalAccountNameInput: document.getElementById('withdrawal-account-name'), withdrawalAccountPhoneInput: document.getElementById('withdrawal-account-phone'), withdrawalProviderSelect: document.getElementById('withdrawal-provider'), saveWithdrawalMethodBtn: document.getElementById('save-withdrawal-method-btn'), fullNameInput: document.getElementById('full-name-input'), saveProfileBtn: document.getElementById('save-profile-btn'), goToRegisterLink: document.getElementById('go-to-register-link'), forgotPasswordLink: document.getElementById('forgot-password-link'), sendNewPasswordBtn: document.getElementById('send-new-password-btn'), withdrawalBalance: document.getElementById('withdrawal-balance'), withdrawalAmountInput: document.getElementById('withdrawal-amount-input'), requestWithdrawalBtn: document.getElementById('request-withdrawal-btn'), recentWinnersList: document.getElementById('recent-winners-list'), updateScreen: document.getElementById('update-screen'), updateNowBtn: document.getElementById('update-now-btn'), rememberMeCheck: document.getElementById('remember-me-check'), countryCodeLogin: document.getElementById('country-code-login'), getAppLink: document.getElementById('get-app-link'),
-        referralCodeInput: document.getElementById('referral-code-input'),
-        userReferralCode: document.getElementById('user-referral-code'),
-        copyReferralCodeBtn: document.getElementById('copy-referral-code-btn'),
     };
     let registrationPhone = '';
 
@@ -233,7 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.allModals.forEach(m => m.addEventListener('click', (e) => { if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('close-modal-btn')) hideAllModals(); }));
         document.getElementById('language-selector').addEventListener('change', (e) => { appState.language = e.target.value; updateUI(); });
         DOM.togglePasswordIcon.addEventListener('click', () => { DOM.passwordLoginInput.type = DOM.passwordLoginInput.type === 'password' ? 'text' : 'password'; DOM.togglePasswordIcon.classList.toggle('fa-eye-slash'); DOM.togglePasswordIcon.classList.toggle('fa-eye'); });
-        
         DOM.settingsTabs.addEventListener('click', (e) => {
             const clickedTab = e.target.closest('.tab-link');
             if (!clickedTab) return;
@@ -245,19 +241,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if(activeTabContent) activeTabContent.classList.add('active');
             if (appState.isLoggedIn) {
                 if (tabId === 'transaction-history') fetchAndRenderTransactionHistory();
-                if (tabId === 'referral' && appState.user) {
-                    DOM.userReferralCode.textContent = appState.user.referralCode || 'N/A';
-                }
             }
         });
-
-        DOM.copyReferralCodeBtn.addEventListener('click', () => {
-            if (DOM.userReferralCode.textContent && DOM.userReferralCode.textContent !== 'Loading...') {
-                navigator.clipboard.writeText(DOM.userReferralCode.textContent);
-                showToast('Referral code copied!', 'success');
-            }
-        });
-        
         DOM.iHaveDepositedBtn.addEventListener('click', () => {
             DOM.depositorPhoneInput.value = '';
             DOM.depositAmountInput.value = '';
@@ -295,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const countryCode = DOM.countryCodeLogin.value;
             const phone = DOM.phoneLoginInput.value;
             const password = DOM.passwordLoginInput.value;
-            if (!phone || !password || !document.getElementById('terms-check').checked) { return showToast('Fill all fields and agree to terms.', 'error'); }
+            if (!phone || !password || !document.getElementById('terms-check').checked) { showToast('Fill all fields and agree to terms.', 'error'); return; }
             const fullPhone = countryCode.replace('+', '') + phone;
             try {
                 const response = await fetch(`${API_BASE_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: fullPhone, password }) });
@@ -362,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!accountName || !accountPhone) { return showToast('Please fill in both Account Name and Phone Number.', 'error'); }
             if (!token) { return showToast('Authentication error. Please log in again.', 'error'); }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/withdrawal-method`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ accountName, accountPhone, provider }) });
+                const response = await fetch(`${API_BASE_URL}/api/user/withdrawal-method`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountName, accountPhone, provider }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
                 if (appState.user) { appState.user.withdrawalMethod = { accountName, accountPhone, provider }; }
@@ -401,12 +386,11 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.savePasswordBtn.addEventListener('click', async () => {
             const password = DOM.passwordRegisterInput.value;
             const confirmPassword = DOM.confirmPasswordRegisterInput.value;
-            const referralCode = DOM.referralCodeInput.value;
             DOM.passwordError.classList.add('hidden');
             if (password.length < 6) { DOM.passwordError.textContent = 'Password must be at least 6 characters.'; DOM.passwordError.classList.remove('hidden'); return; }
             if (password !== confirmPassword) { DOM.passwordError.textContent = 'Passwords do not match.'; DOM.passwordError.classList.remove('hidden'); return; }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: registrationPhone, password: password, referralCode: referralCode }) });
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: registrationPhone, password: password }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
                 showToast(data.message, 'success');
@@ -422,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newPassword !== confirmNewPassword) { DOM.changePasswordError.textContent = 'Passwords do not match.'; DOM.changePasswordError.classList.remove('hidden'); return; }
             if (!token) { showToast('Authentication error.', 'error'); return; }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword, newPassword }), });
+                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword, newPassword }), });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Failed to change password.');
                 showToast(data.message, 'success');
@@ -434,13 +418,13 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.slotsContainer.addEventListener('click', (e) => {
             const slotBtn = e.target.closest('.slot-btn');
             if (!slotBtn) return;
-            const slotId = slotBtn.dataset.slotId;
+            const slotId = slotBtn.dataset.slotId; // Use the re-mapped ID
             const internalSlotId = `slot${slotId}`;
             const slotData = appState.betting.slotsData[internalSlotId];
             if (!slotData) { showToast('Slot data not loaded.', 'error'); return; }
             DOM.bettingGridTitle.textContent = `${slotBtn.querySelector('.slot-title').textContent} - Bet Grid`;
             DOM.bettingGridContainer.innerHTML = '';
-            DOM.bettingGridContainer.dataset.currentSlot = internalSlotId;
+            DOM.bettingGridContainer.dataset.currentSlot = internalSlotId; // Store the internal ID
             for (let r = 1; r <= 10; r++) {
                 for (let c = 1; c <= 10; c++) {
                     const box = document.createElement('div');
@@ -458,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.bettingGridContainer.addEventListener('click', (e) => {
             const box = e.target.closest('.grid-box');
             if (!box || box.classList.contains('unavailable')) return;
-            const slotId = DOM.bettingGridContainer.dataset.currentSlot;
+            const slotId = DOM.bettingGridContainer.dataset.currentSlot; // Get internal ID
             const boxId = box.dataset.boxId;
             if (!appState.betting.selections[slotId]) { appState.betting.selections[slotId] = []; }
             const selectionIndex = appState.betting.selections[slotId].indexOf(boxId);
