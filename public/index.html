@@ -105,6 +105,7 @@
 
     <!-- ======== MODALS ======== -->
     <div id="register-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><div id="register-step-1"><h2 data-lang-key="createAccount">Create Account</h2><label>Phone Number</label><div class="phone-input-group"><select id="country-code-register"><option value="+251" selected>ET (+251)</option></select><input type="tel" id="phone-register" placeholder="XXXXXXXXX"></div><button class="btn btn-primary" id="continue-to-telegram-btn">Continue</button></div><div id="register-step-1b" class="hidden"><h2>Connect to Telegram</h2><p>To receive your OTP...</p><a href="https://t.me/etafantaAuthbot" target="_blank" class="btn btn-secondary" id="telegram-bot-link">1. Open Bot</a><p class="small-text">After sending a message, come back here.</p><button class="btn btn-primary" id="check-telegram-btn">2. I have sent the message</button></div><div id="register-step-2" class="hidden"><h2>Enter Verification Code</h2><p>We've sent a code to your Telegram account.</p><input type="text" id="otp-input" placeholder="_ _ _ _ _ _" maxlength="6"><button class="btn btn-primary" id="verify-otp-btn">Verify Code</button></div><div id="register-step-3" class="hidden"><h2>Set Your Password</h2><input type="password" id="password-register" placeholder="Password"><input type="password" id="confirm-password-register" placeholder="Confirm Password"><p id="password-error" class="error-text hidden"></p><button class="btn btn-primary" id="save-password-btn">Save</button></div></div></div>
+    <div id="register-step-3" class="hidden"><h2>Set Your Password</h2><input type="password" id="password-register" placeholder="Password"><input type="password" id="confirm-password-register" placeholder="Confirm Password"><label for="referral-code-input">Referral Code (Optional)</label><input type="text" id="referral-code-input" placeholder="e.g., ETA-XXXXX"><p id="password-error" class="error-text hidden"></p><button class="btn btn-primary" id="save-password-btn">Save</button></div></div></div>
     <div id="login-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><h2>Login</h2><label>User ID (Phone Number)</label><div class="phone-input-group"><select id="country-code-login"><option value="+251" selected>ET (+251)</option></select><input type="tel" id="phone-login" placeholder="XXXXXXXXX"></div><label>Password</label><div class="password-input-group"><input type="password" id="password-login"><i class="fa-solid fa-eye-slash" id="toggle-password"></i></div><div class="login-options"><a href="#" id="forgot-password-link">Forgot password?</a><div><input type="checkbox" id="remember-me-check"><label for="remember-me-check">Remember Me</label></div></div><div class="terms-agreement"><input type="checkbox" id="terms-check" required><label for="terms-check">I agree to the <a href="https://brown-lilian-45.tiiny.site/Terms-and-Conditions.pdf" target="_blank">Terms and Conditions</a></label></div><button class="btn btn-primary" id="login-btn-modal">Login</button><div class="modal-switch-link">Don't have an account? <a href="#" id="go-to-register-link">Register here</a></div></div></div>
     <div id="forgot-password-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><h2>Reset Password</h2><label>User ID (Phone Number)</label><div class="phone-input-group"><select id="country-code-reset"><option value="+251" selected>ET (+251)</option></select><input type="tel" id="phone-reset" placeholder="XXXXXXXXX"></div><button class="btn btn-primary" id="send-new-password-btn">Send New Password</button></div></div>
     <div id="deposit-modal" class="modal-overlay hidden"><div class="modal-content"><span class="close-modal-btn">×</span><h3>Deposit Funds</h3><p>Deposit To:</p><div class="deposit-details"><p><strong>Telebirr</strong></p><p><strong>Name:</strong> Tedla</p><p><strong>Phone:</strong> +251976518199</p><p class="coming-soon-note">M-PESA coming soon</p></div><button class="btn btn-primary" id="i-have-deposited-btn">I Have Deposited</button></div></div>
@@ -117,6 +118,7 @@
             <div class="settings-layout">
                 <nav class="settings-tabs">
                     <button class="tab-link active" data-tab="profile"><i class="fa-solid fa-id-card"></i> <span>Profile</span></button>
+                    <button class="tab-link" data-tab="referral"><i class="fa-solid fa-users"></i> <span>Referral</span></button>
                     <button class="tab-link" data-tab="withdrawal"><i class="fa-solid fa-money-bill-wave"></i> <span>Withdrawal</span></button>
                     <button class="tab-link" data-tab="transaction-history"><i class="fa-solid fa-money-bill-transfer"></i> <span>Transactions</span></button>
                     <button class="tab-link" data-tab="about"><i class="fa-solid fa-info-circle"></i> <span>About</span></button>
@@ -137,6 +139,15 @@
                          <p>Available: <span id="withdrawal-balance">0.00 ETB</span></p>
                          <input type="number" placeholder="Amount to withdraw" id="withdrawal-amount-input">
                          <button class="btn btn-primary" id="request-withdrawal-btn">Request Withdrawal</button>
+                    </div>
+                    <div id="tab-referral" class="tab-content">
+                        <h3>Refer a Friend</h3>
+                        <p>Share your code with friends. They get a 10 ETB bonus on signup, and you get a 20 ETB bonus when they make their first deposit of 50 ETB or more!</p>
+                        <div class="referral-code-display">
+                            <span>Your Code:</span>
+                            <strong id="user-referral-code">Loading...</strong>
+                            <button id="copy-referral-code-btn" class="btn btn-secondary"><i class="fa-solid fa-copy"></i></button>
+                        </div>
                     </div>
                     <div id="tab-transaction-history" class="tab-content">
                          <h3>Transaction History (Last 30 Days)</h3>

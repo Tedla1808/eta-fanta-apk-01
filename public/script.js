@@ -245,19 +245,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if(activeTabContent) activeTabContent.classList.add('active');
             if (appState.isLoggedIn) {
                 if (tabId === 'transaction-history') fetchAndRenderTransactionHistory();
-                if (tabId === 'referral') {
+                if (tabId === 'referral' && appState.user) {
                     DOM.userReferralCode.textContent = appState.user.referralCode || 'N/A';
                 }
             }
         });
-        
+
         DOM.copyReferralCodeBtn.addEventListener('click', () => {
             if (DOM.userReferralCode.textContent && DOM.userReferralCode.textContent !== 'Loading...') {
                 navigator.clipboard.writeText(DOM.userReferralCode.textContent);
                 showToast('Referral code copied!', 'success');
             }
         });
-
+        
         DOM.iHaveDepositedBtn.addEventListener('click', () => {
             DOM.depositorPhoneInput.value = '';
             DOM.depositAmountInput.value = '';
@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const countryCode = DOM.countryCodeLogin.value;
             const phone = DOM.phoneLoginInput.value;
             const password = DOM.passwordLoginInput.value;
-            if (!phone || !password || !document.getElementById('terms-check').checked) { showToast('Fill all fields and agree to terms.', 'error'); return; }
+            if (!phone || !password || !document.getElementById('terms-check').checked) { return showToast('Fill all fields and agree to terms.', 'error'); }
             const fullPhone = countryCode.replace('+', '') + phone;
             try {
                 const response = await fetch(`${API_BASE_URL}/api/auth/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: fullPhone, password }) });
