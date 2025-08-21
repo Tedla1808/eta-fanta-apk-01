@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
     toObject: { virtuals: true } 
 });
 
+// This "virtual" property automatically calculates the total balance
 userSchema.virtual('totalBalance').get(function() {
     return (this.mainBalance || 0) + (this.bonusBalance || 0);
 });
