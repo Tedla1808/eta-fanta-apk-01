@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // ======== GLOBAL STATE & CONSTANTS ========
     const CURRENT_APP_VERSION = '1.0.0'; 
     const appState = { isLoggedIn: false, user: null, language: 'en', betting: { slotsData: {}, selections: {} } };
-    const API_BASE_URL = 'https://eta-fanta-apk-01.onrender.com';
+    const API_BASE_URL = 'https://eta-fanta-backend.onrender.com';
     const socket = io(API_BASE_URL);
     const TOTAL_SLOT_BOXES = 100;
     const COMMISSION_RATES = {
