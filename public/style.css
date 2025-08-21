@@ -186,3 +186,31 @@ select option {
     text-decoration: none; /* ** THIS REMOVES THE UNDERLINE ** */
     color: var(--primary-bg); /* Ensure text color matches other primary buttons */
 }
+
+/* --- NEW STYLES FOR REFERRAL SYSTEM --- */
+
+.referral-code-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+.referral-code-display span {
+    font-size: 1.1rem;
+}
+
+.referral-code-display strong {
+    font-size: 1.5rem;
+    color: var(--primary-accent);
+    letter-spacing: 2px;
+}
+
+#copy-referral-code-btn {
+    padding: 8px 12px;
+    font-size: 1rem;
+}

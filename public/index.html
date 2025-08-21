@@ -10,8 +10,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    
+    <!-- PULL-TO-REFRESH LIBRARY -->
+    <script src="https://unpkg.com/pulltorefreshjs@0.1.22/dist/index.umd.js"></script>
+    <style>
+      #ptr { background: #f5f5f5; font-family: sans-serif; color: #aaa; font-size: 14px; line-height: 0; text-align: center; height: 0; overflow: hidden; transition: height 0.3s, line-height 0.3s; }
+      #ptr.ptr--ptr-pull .ptr-icon, #ptr.ptr--ptr-release .ptr-icon { transform: rotate(180deg); }
+      #ptr.ptr--ptr-refresh .ptr-icon { animation: ptr-rotation 1s infinite linear; }
+      @keyframes ptr-rotation { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
+    
+    <!-- PULL-TO-REFRESH ELEMENT -->
+    <div id="ptr">
+        <span class="ptr-icon">↑</span> 
+        <span class="ptr-text">Pull to refresh</span>
+    </div>
 
     <!-- ======== HEADER COMPONENT ======== -->
     <header id="app-header">
@@ -54,14 +69,14 @@
                 <div class="slots-main-area">
                     <h2 data-lang-key="chooseSlot">Choose a Slot</h2>
                     <div class="slots-container">
-                        <button class="slot-btn" data-slot-id="1"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 1</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
-                        <button class="slot-btn" data-slot-id="2"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 2</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
-                        <button class="slot-btn" data-slot-id="3"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 3</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
-                        <button class="slot-btn" data-slot-id="4"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 4</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
-                        <button class="slot-btn" data-slot-id="5"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 5</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
-                        <button class="slot-btn" data-slot-id="6"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 6</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
-                        <button class="slot-btn" data-slot-id="7"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 7</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
-                        <button class="slot-btn" data-slot-id="8"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 8</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="0.9"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 1</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="1"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 2</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="2"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 3</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="3"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 4</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="4"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 5</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="5"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 6</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="6"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 7</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
+                        <button class="slot-btn" data-slot-id="7"><div class="slot-win-amount">WIN ...</div><div class="slot-title">Slot 8</div><div class="slot-bet-cost">Bet ... ETB</div><div class="slot-fullness-display">0% Full</div></button>
                     </div>
                     <div class="bet-controls">
                         <div class="amount-display"><span data-lang-key="amountToBet">Amount to Bet:</span><span id="total-bet-amount">0.00 ETB</span></div>
