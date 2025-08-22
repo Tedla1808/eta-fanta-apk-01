@@ -186,3 +186,31 @@ select option {
     text-decoration: none; /* ** THIS REMOVES THE UNDERLINE ** */
     color: var(--primary-bg); /* Ensure text color matches other primary buttons */
 }
+
+/* --- STYLES FOR FORCE UPDATE SCREEN --- */
+#update-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    height: 100%;
+}
+.update-container {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    max-width: 500px;
+}
+.update-container h2 {
+    color: var(--primary-accent);
+    margin-bottom: 20px;
+}
+.update-container p {
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+.update-container .btn {
+    width: 100%;
+}

@@ -1,8 +1,8 @@
-// --- START OF FILE script.js --- (FINAL, WITH SLOT RE-MAPPING LOGIC)
+// --- START OF FILE script.js --- (COMPLETE, CORRECTED, AND FULLY FUNCTIONAL)
 
 document.addEventListener('DOMContentLoaded', () => {
     // ======== GLOBAL STATE & CONSTANTS ========
-    const CURRENT_APP_VERSION = '1.0.0'; 
+    const CURRENT_APP_VERSION = '1.1.0'; 
     const appState = { isLoggedIn: false, user: null, language: 'en', betting: { slotsData: {}, selections: {} } };
     const API_BASE_URL = 'https://eta-fanta-apk-01.onrender.com';
     const socket = io(API_BASE_URL);
@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!accountName || !accountPhone) { return showToast('Please fill in both Account Name and Phone Number.', 'error'); }
             if (!token) { return showToast('Authentication error. Please log in again.', 'error'); }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/withdrawal-method`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountName, accountPhone, provider }) });
+                const response = await fetch(`${API_BASE_URL}/api/user/withdrawal-method`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ accountName, accountPhone, provider }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
                 if (appState.user) { appState.user.withdrawalMethod = { accountName, accountPhone, provider }; }
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newPassword !== confirmNewPassword) { DOM.changePasswordError.textContent = 'Passwords do not match.'; DOM.changePasswordError.classList.remove('hidden'); return; }
             if (!token) { showToast('Authentication error.', 'error'); return; }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword, newPassword }), });
+                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword, newPassword }), });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Failed to change password.');
                 showToast(data.message, 'success');
@@ -418,13 +418,12 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.slotsContainer.addEventListener('click', (e) => {
             const slotBtn = e.target.closest('.slot-btn');
             if (!slotBtn) return;
-            const slotId = slotBtn.dataset.slotId; // Use the re-mapped ID
-            const internalSlotId = `slot${slotId}`;
-            const slotData = appState.betting.slotsData[internalSlotId];
+            const slotId = `slot${slotBtn.dataset.slotId}`;
+            const slotData = appState.betting.slotsData[slotId];
             if (!slotData) { showToast('Slot data not loaded.', 'error'); return; }
             DOM.bettingGridTitle.textContent = `${slotBtn.querySelector('.slot-title').textContent} - Bet Grid`;
             DOM.bettingGridContainer.innerHTML = '';
-            DOM.bettingGridContainer.dataset.currentSlot = internalSlotId; // Store the internal ID
+            DOM.bettingGridContainer.dataset.currentSlot = slotId;
             for (let r = 1; r <= 10; r++) {
                 for (let c = 1; c <= 10; c++) {
                     const box = document.createElement('div');
@@ -433,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     box.dataset.boxId = boxId;
                     box.textContent = (r - 1) * 10 + c;
                     if (slotData.unavailableBoxes.includes(boxId)) { box.classList.add('unavailable'); }
-                    else if (appState.betting.selections[internalSlotId]?.includes(boxId)) { box.classList.add('selected'); }
+                    else if (appState.betting.selections[slotId]?.includes(boxId)) { box.classList.add('selected'); }
                     DOM.bettingGridContainer.appendChild(box);
                 }
             }
@@ -442,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.bettingGridContainer.addEventListener('click', (e) => {
             const box = e.target.closest('.grid-box');
             if (!box || box.classList.contains('unavailable')) return;
-            const slotId = DOM.bettingGridContainer.dataset.currentSlot; // Get internal ID
+            const slotId = DOM.bettingGridContainer.dataset.currentSlot;
             const boxId = box.dataset.boxId;
             if (!appState.betting.selections[slotId]) { appState.betting.selections[slotId] = []; }
             const selectionIndex = appState.betting.selections[slotId].indexOf(boxId);
