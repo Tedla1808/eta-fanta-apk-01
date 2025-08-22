@@ -25,7 +25,7 @@ const SLOT_CONFIG = {
 
 const APP_VERSION_CONFIG = {
     latestVersion: '1.1.0',
-    updateUrl: 'https://t.me/etafanta_user/28'
+    updateUrl: 'https://t.me/etafanta_user'
 };
 
 router.get('/version', (req, res) => {
