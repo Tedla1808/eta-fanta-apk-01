@@ -1,8 +1,8 @@
-// --- START OF FILE script.js --- (COMPLETE, CORRECTED, AND FULLY FUNCTIONAL)
+// --- START OF FILE script.js --- (FINAL, CORRECTED, AND FULLY FUNCTIONAL)
 
 document.addEventListener('DOMContentLoaded', () => {
     // ======== GLOBAL STATE & CONSTANTS ========
-    const CURRENT_APP_VERSION = '1.1.0'; 
+    const CURRENT_APP_VERSION = '1.0.1'; 
     const appState = { isLoggedIn: false, user: null, language: 'en', betting: { slotsData: {}, selections: {} } };
     const API_BASE_URL = 'https://eta-fanta-apk-01.onrender.com';
     const socket = io(API_BASE_URL);
@@ -418,12 +418,13 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.slotsContainer.addEventListener('click', (e) => {
             const slotBtn = e.target.closest('.slot-btn');
             if (!slotBtn) return;
-            const slotId = `slot${slotBtn.dataset.slotId}`;
-            const slotData = appState.betting.slotsData[slotId];
+            const slotId = slotBtn.dataset.slotId;
+            const internalSlotId = `slot${slotId}`;
+            const slotData = appState.betting.slotsData[internalSlotId];
             if (!slotData) { showToast('Slot data not loaded.', 'error'); return; }
             DOM.bettingGridTitle.textContent = `${slotBtn.querySelector('.slot-title').textContent} - Bet Grid`;
             DOM.bettingGridContainer.innerHTML = '';
-            DOM.bettingGridContainer.dataset.currentSlot = slotId;
+            DOM.bettingGridContainer.dataset.currentSlot = internalSlotId;
             for (let r = 1; r <= 10; r++) {
                 for (let c = 1; c <= 10; c++) {
                     const box = document.createElement('div');
@@ -432,7 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     box.dataset.boxId = boxId;
                     box.textContent = (r - 1) * 10 + c;
                     if (slotData.unavailableBoxes.includes(boxId)) { box.classList.add('unavailable'); }
-                    else if (appState.betting.selections[slotId]?.includes(boxId)) { box.classList.add('selected'); }
+                    else if (appState.betting.selections[internalSlotId]?.includes(boxId)) { box.classList.add('selected'); }
                     DOM.bettingGridContainer.appendChild(box);
                 }
             }
@@ -506,42 +507,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     const checkAppVersion = async () => {
-        // ** THIS IS THE NEW LOGIC **
         if (!isNativeApp()) {
-            // If this is a web browser, skip the version check entirely
-            // and just start the app.
             console.log("Running on web, skipping app version check.");
             init();
             return;
         }
-
-        // If we reach here, it means we are in the native Android app.
-        // Now, we proceed with the version check as before.
         try {
             const response = await fetch(`${API_BASE_URL}/api/game/version`);
-            if (!response.ok) {
-                init(); // If version check fails, just start the app
-                return;
-            }
+            if (!response.ok) { init(); return; }
             const data = await response.json();
-            
             if (CURRENT_APP_VERSION < data.latestVersion) {
-                // If the app is outdated, show the update screen
                 DOM.allScreens.forEach(s => s.classList.add('hidden'));
                 DOM.updateScreen.classList.remove('hidden');
-                DOM.updateNowBtn.onclick = () => {
-                    window.location.href = data.updateUrl; 
-                };
+                DOM.updateNowBtn.onclick = () => { window.location.href = data.updateUrl; };
             } else {
-                // If the app is up-to-date, initialize all functionality.
                 init();
             }
         } catch (error) {
             console.error("Version check failed, starting app normally:", error);
-            init(); // If there's any network error, just start the app.
+            init();
         }
     };
-      
-    populateRememberedUser();
+
     checkAppVersion();
 });
