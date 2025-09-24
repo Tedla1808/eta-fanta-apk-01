@@ -66,34 +66,43 @@ io.on('connection', (socket) => {
     });
 });
 
-// ** NEW HELPER FUNCTION TO SEND THE WELCOME/HELP MESSAGE **
-const sendWelcomeMessage = (ctx) => {
-    ctx.reply(
-        'Welcome to Eta Fanta! To connect your website account, please use the button below to share your phone number.', {
-            reply_markup: {
-                keyboard: [
-                    [{ text: 'Share My Phone Number', request_contact: true }]
-                ],
-                one_time_keyboard: true,
-                resize_keyboard: true
+// ** UPDATED HELPER FUNCTION WITH ERROR HANDLING **
+const sendWelcomeMessage = async (ctx) => {
+    try {
+        await ctx.reply(
+            'Welcome to Eta Fanta! To connect your website account, please use the button below to share your phone number.', {
+                reply_markup: {
+                    keyboard: [
+                        [{ text: 'Share My Phone Number', request_contact: true }]
+                    ],
+                    one_time_keyboard: true,
+                    resize_keyboard: true
+                }
             }
+        );
+    } catch (error) {
+        // This 'catch' block prevents the server from crashing if a user has blocked the bot.
+        if (error.response && error.response.error_code === 403) {
+            console.warn(`[Bot] Could not send message to user ${ctx.from.id} because they have blocked the bot.`);
+        } else {
+            console.error(`[Bot] Error sending welcome message to ${ctx.from.id}:`, error);
         }
-    );
+    }
 };
 
-// ** ADDED: /start command now uses the helper **
+// ** UPDATED: /start command now uses the async helper **
 bot.start((ctx) => {
     console.log(`[Bot] Received /start from user ${ctx.from.id}`);
     sendWelcomeMessage(ctx);
 });
 
-// ** ADDED: /help command for users who get stuck **
+// ** UPDATED: /help command now uses the async helper **
 bot.help((ctx) => {
     console.log(`[Bot] Received /help from user ${ctx.from.id}`);
     sendWelcomeMessage(ctx);
 });
 
-// ** UPDATED BOT LOGIC TO HANDLE ALL ACTIONS **
+// ** BOT LOGIC TO HANDLE ALL ACTIONS **
 bot.on('callback_query', async (ctx) => {
     if (String(ctx.callbackQuery.from.id) !== String(ADMIN_TELEGRAM_ID)) {
         return ctx.answerCbQuery("You are not authorized.");
