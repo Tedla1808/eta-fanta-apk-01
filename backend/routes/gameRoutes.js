@@ -47,7 +47,7 @@ const getSpinnerResult = () => {
 // ===================================
 
 const APP_VERSION_CONFIG = {
-    latestVersion: '1.0.0',
+    latestVersion: '1.2.0',
     updateUrl: 'https://t.me/etafanta_user'
 };
 

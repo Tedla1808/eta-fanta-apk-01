@@ -1,8 +1,8 @@
-// --- START OF FILE script.js --- (FINAL, WITH SLOT RE-MAPPING LOGIC)
+// --- START OF FILE script.js ---
 
 document.addEventListener('DOMContentLoaded', () => {
     // ======== GLOBAL STATE & CONSTANTS ========
-    const CURRENT_APP_VERSION = '1.0.0'; 
+    const CURRENT_APP_VERSION = '1.2.0'; 
     const appState = { isLoggedIn: false, user: null, language: 'en', betting: { slotsData: {}, selections: {} } };
     const API_BASE_URL = 'https://eta-fanta-apk-01.onrender.com';
     const socket = io(API_BASE_URL);
@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const DOM = {
         mainActionBtn: document.getElementById('main-action-btn'), allScreens: document.querySelectorAll('.app-screen'), allModals: document.querySelectorAll('.modal-overlay'), loggedOutView: document.getElementById('logged-out-view'), loggedInView: document.getElementById('logged-in-view'), userPhoneDisplay: document.getElementById('user-phone-display'), userBalanceDisplay: document.getElementById('user-balance-display'), registerBtnHeader: document.getElementById('register-btn-header'), depositBtn: document.getElementById('deposit-btn'), settingsBtn: document.getElementById('settings-btn'), logoutBtn: document.getElementById('logout-btn'), logoLink: document.getElementById('logo-link'), registerModal: document.getElementById('register-modal'), loginModal: document.getElementById('login-modal'), forgotPasswordModal: document.getElementById('forgot-password-modal'), depositModal: document.getElementById('deposit-modal'), depositVerificationModal: document.getElementById('deposit-verification-modal'), bettingGridModal: document.getElementById('betting-grid-modal'), settingsModal: document.getElementById('settings-modal'), settingsTabs: document.querySelector('.settings-tabs'), settingsContent: document.querySelectorAll('.settings-content .tab-content'), transactionHistoryTableBody: document.getElementById('transaction-history-table-body'), iHaveDepositedBtn: document.getElementById('i-have-deposited-btn'), verifyDepositBtn: document.getElementById('verify-deposit-btn'), depositorPhoneInput: document.getElementById('depositor-phone-input'), depositAmountInput: document.getElementById('deposit-amount-input'), loginBtnModal: document.getElementById('login-btn-modal'), phoneLoginInput: document.getElementById('phone-login'), togglePasswordIcon: document.getElementById('toggle-password'), passwordLoginInput: document.getElementById('password-login'), slotsContainer: document.querySelector('.slots-container'), bettingGridContainer: document.getElementById('betting-grid-container'), bettingGridTitle: document.getElementById('betting-grid-title'), totalBetAmountEl: document.getElementById('total-bet-amount'), placeBetBtn: document.getElementById('place-bet-btn'), clearBetBtn: document.getElementById('clear-bet-btn'), registerStep1: document.getElementById('register-step-1'), registerStep1b: document.getElementById('register-step-1b'), registerStep2: document.getElementById('register-step-2'), registerStep3: document.getElementById('register-step-3'), continueToTelegramBtn: document.getElementById('continue-to-telegram-btn'), phoneRegisterInput: document.getElementById('phone-register'), countryCodeRegister: document.getElementById('country-code-register'), checkTelegramBtn: document.getElementById('check-telegram-btn'), otpInput: document.getElementById('otp-input'), verifyOtpBtn: document.getElementById('verify-otp-btn'), passwordRegisterInput: document.getElementById('password-register'), confirmPasswordRegisterInput: document.getElementById('confirm-password-register'), passwordError: document.getElementById('password-error'), savePasswordBtn: document.getElementById('save-password-btn'), changePasswordBtn: document.getElementById('change-password-btn'), currentPasswordInput: document.getElementById('current-password'), newPasswordInput: document.getElementById('new-password'), confirmNewPasswordInput: document.getElementById('confirm-new-password'), changePasswordError: document.getElementById('change-password-error'), withdrawalAccountNameInput: document.getElementById('withdrawal-account-name'), withdrawalAccountPhoneInput: document.getElementById('withdrawal-account-phone'), withdrawalProviderSelect: document.getElementById('withdrawal-provider'), saveWithdrawalMethodBtn: document.getElementById('save-withdrawal-method-btn'), fullNameInput: document.getElementById('full-name-input'), saveProfileBtn: document.getElementById('save-profile-btn'), goToRegisterLink: document.getElementById('go-to-register-link'), forgotPasswordLink: document.getElementById('forgot-password-link'), sendNewPasswordBtn: document.getElementById('send-new-password-btn'), withdrawalBalance: document.getElementById('withdrawal-balance'), withdrawalAmountInput: document.getElementById('withdrawal-amount-input'), requestWithdrawalBtn: document.getElementById('request-withdrawal-btn'), recentWinnersList: document.getElementById('recent-winners-list'), updateScreen: document.getElementById('update-screen'), updateNowBtn: document.getElementById('update-now-btn'), rememberMeCheck: document.getElementById('remember-me-check'), countryCodeLogin: document.getElementById('country-code-login'), getAppLink: document.getElementById('get-app-link'),
-        // Spinner DOM Elements
         gameSelectionModal: document.getElementById('game-selection-modal'),
         selectSlotsBtn: document.getElementById('select-slots-btn'),
         selectSpinnerBtn: document.getElementById('select-spinner-btn'),
@@ -26,12 +25,76 @@ document.addEventListener('DOMContentLoaded', () => {
         spinBtn: document.getElementById('spin-btn'),
         spinnerBalanceDisplay: document.getElementById('spinner-balance-display'),
         spinnerBetAmountInput: document.getElementById('spinner-bet-amount'),
+        homePageIndicator: document.getElementById('home-page-indicator'),
+        fakePlaysList: document.getElementById('fake-plays-list'),
     };
     let registrationPhone = '';
-    let currentRotation = 0; // For spinner game
+    let currentRotation = 0; 
+    let fakePlaysInterval = null;
 
     const isNativeApp = () => !!window.Capacitor;
-    const showScreen = (id) => { DOM.allScreens.forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
+
+    // --- FAKE PLAYS ANIMATION LOGIC (MODIFIED) ---
+    const generateFakePhoneNumber = () => {
+        // Generates a random number between 100 and 999
+        const lastThree = Math.floor(100 + Math.random() * 900);
+        return `+2519...${lastThree}`;
+    };
+
+    const initializeFakePlays = () => {
+        DOM.fakePlaysList.innerHTML = '';
+        for (let i = 0; i < 3; i++) {
+            const li = document.createElement('li');
+            li.textContent = generateFakePhoneNumber();
+            li.style.top = `${i * 25}px`;
+            DOM.fakePlaysList.appendChild(li);
+        }
+    };
+
+    const updateFakePlays = () => {
+        const list = DOM.fakePlaysList;
+        if (list.children.length < 3) return; // Guard clause
+
+        const itemToExit = list.firstElementChild;
+        itemToExit.classList.add('exit');
+
+        list.children[1].style.top = '0px';
+        list.children[2].style.top = '25px';
+        
+        const newItem = document.createElement('li');
+        newItem.textContent = generateFakePhoneNumber();
+        newItem.style.top = '75px'; // Start position for animation (below view)
+        list.appendChild(newItem);
+
+        setTimeout(() => {
+            newItem.style.top = '50px'; // End position (the last visible slot)
+        }, 50);
+
+        setTimeout(() => {
+            list.removeChild(itemToExit);
+        }, 500);
+    };
+    // --- END FAKE PLAYS LOGIC ---
+
+    const showScreen = (id) => {
+        DOM.allScreens.forEach(s => s.classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+
+        if (id === 'betting-screen' || id === 'spinner-screen') {
+            DOM.homePageIndicator.classList.remove('indicator-hidden');
+            if (id === 'spinner-screen' && !fakePlaysInterval) {
+                initializeFakePlays();
+                fakePlaysInterval = setInterval(updateFakePlays, 2000);
+            }
+        } else {
+            DOM.homePageIndicator.classList.add('indicator-hidden');
+            if (fakePlaysInterval) {
+                clearInterval(fakePlaysInterval);
+                fakePlaysInterval = null;
+            }
+        }
+    };
+    
     const showModal = (el) => { if (el) el.classList.remove('hidden'); };
     const hideAllModals = () => DOM.allModals.forEach(m => m.classList.add('hidden'));
     const showToast = (msg, type = 'success') => { const t = document.getElementById('toast-notification'); t.textContent = msg; t.className = `toast-notification ${type}`; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); };
@@ -229,6 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         DOM.logoLink.addEventListener('click', (e) => { e.preventDefault(); hideAllModals(); showScreen('home-screen'); });
+        DOM.homePageIndicator.addEventListener('click', (e) => { e.preventDefault(); hideAllModals(); showScreen('home-screen'); });
+
         
         DOM.mainActionBtn.addEventListener('click', () => { 
             if (appState.isLoggedIn) { 
@@ -446,13 +511,13 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.slotsContainer.addEventListener('click', (e) => {
             const slotBtn = e.target.closest('.slot-btn');
             if (!slotBtn) return;
-            const slotId = slotBtn.dataset.slotId; // Use the re-mapped ID
+            const slotId = slotBtn.dataset.slotId;
             const internalSlotId = `slot${slotId}`;
             const slotData = appState.betting.slotsData[internalSlotId];
             if (!slotData) { showToast('Slot data not loaded.', 'error'); return; }
             DOM.bettingGridTitle.textContent = `${slotBtn.querySelector('.slot-title').textContent} - Bet Grid`;
             DOM.bettingGridContainer.innerHTML = '';
-            DOM.bettingGridContainer.dataset.currentSlot = internalSlotId; // Store the internal ID
+            DOM.bettingGridContainer.dataset.currentSlot = internalSlotId;
             for (let r = 1; r <= 10; r++) {
                 for (let c = 1; c <= 10; c++) {
                     const box = document.createElement('div');
@@ -470,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.bettingGridContainer.addEventListener('click', (e) => {
             const box = e.target.closest('.grid-box');
             if (!box || box.classList.contains('unavailable')) return;
-            const slotId = DOM.bettingGridContainer.dataset.currentSlot; // Get internal ID
+            const slotId = DOM.bettingGridContainer.dataset.currentSlot;
             const boxId = box.dataset.boxId;
             if (!appState.betting.selections[slotId]) { appState.betting.selections[slotId] = []; }
             const selectionIndex = appState.betting.selections[slotId].indexOf(boxId);
@@ -533,11 +598,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // --- MODIFIED: Spinner Game Logic with Variable Bet ---
         DOM.spinBtn.addEventListener('click', async () => {
             const betAmount = parseFloat(DOM.spinnerBetAmountInput.value);
 
-            // Client-side validation
             if (isNaN(betAmount) || betAmount < 2 || betAmount > 1000) {
                 showToast('Please enter a bet amount between 2 and 1000 ETB.', 'error');
                 return;
@@ -564,8 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.message);
                 
-                // Calculate the angle to land on the winning segment
-                const segmentAngle = 360 / 8; // 8 segments
+                const segmentAngle = 360 / 8;
                 const randomOffset = (Math.random() * segmentAngle * 0.8) - (segmentAngle * 0.4);
                 const targetAngle = (result.winningSegmentIndex * segmentAngle) + randomOffset;
                 
