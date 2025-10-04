@@ -18,8 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const DOM = {
         mainActionBtn: document.getElementById('main-action-btn'), allScreens: document.querySelectorAll('.app-screen'), allModals: document.querySelectorAll('.modal-overlay'), loggedOutView: document.getElementById('logged-out-view'), loggedInView: document.getElementById('logged-in-view'), userPhoneDisplay: document.getElementById('user-phone-display'), userBalanceDisplay: document.getElementById('user-balance-display'), registerBtnHeader: document.getElementById('register-btn-header'), depositBtn: document.getElementById('deposit-btn'), settingsBtn: document.getElementById('settings-btn'), logoutBtn: document.getElementById('logout-btn'), logoLink: document.getElementById('logo-link'), registerModal: document.getElementById('register-modal'), loginModal: document.getElementById('login-modal'), forgotPasswordModal: document.getElementById('forgot-password-modal'), depositModal: document.getElementById('deposit-modal'), depositVerificationModal: document.getElementById('deposit-verification-modal'), bettingGridModal: document.getElementById('betting-grid-modal'), settingsModal: document.getElementById('settings-modal'), settingsTabs: document.querySelector('.settings-tabs'), settingsContent: document.querySelectorAll('.settings-content .tab-content'), transactionHistoryTableBody: document.getElementById('transaction-history-table-body'), iHaveDepositedBtn: document.getElementById('i-have-deposited-btn'), verifyDepositBtn: document.getElementById('verify-deposit-btn'), depositorPhoneInput: document.getElementById('depositor-phone-input'), depositAmountInput: document.getElementById('deposit-amount-input'), loginBtnModal: document.getElementById('login-btn-modal'), phoneLoginInput: document.getElementById('phone-login'), togglePasswordIcon: document.getElementById('toggle-password'), passwordLoginInput: document.getElementById('password-login'), slotsContainer: document.querySelector('.slots-container'), bettingGridContainer: document.getElementById('betting-grid-container'), bettingGridTitle: document.getElementById('betting-grid-title'), totalBetAmountEl: document.getElementById('total-bet-amount'), placeBetBtn: document.getElementById('place-bet-btn'), clearBetBtn: document.getElementById('clear-bet-btn'), registerStep1: document.getElementById('register-step-1'), registerStep1b: document.getElementById('register-step-1b'), registerStep2: document.getElementById('register-step-2'), registerStep3: document.getElementById('register-step-3'), continueToTelegramBtn: document.getElementById('continue-to-telegram-btn'), phoneRegisterInput: document.getElementById('phone-register'), countryCodeRegister: document.getElementById('country-code-register'), checkTelegramBtn: document.getElementById('check-telegram-btn'), otpInput: document.getElementById('otp-input'), verifyOtpBtn: document.getElementById('verify-otp-btn'), passwordRegisterInput: document.getElementById('password-register'), confirmPasswordRegisterInput: document.getElementById('confirm-password-register'), passwordError: document.getElementById('password-error'), savePasswordBtn: document.getElementById('save-password-btn'), changePasswordBtn: document.getElementById('change-password-btn'), currentPasswordInput: document.getElementById('current-password'), newPasswordInput: document.getElementById('new-password'), confirmNewPasswordInput: document.getElementById('confirm-new-password'), changePasswordError: document.getElementById('change-password-error'), withdrawalAccountNameInput: document.getElementById('withdrawal-account-name'), withdrawalAccountPhoneInput: document.getElementById('withdrawal-account-phone'), withdrawalProviderSelect: document.getElementById('withdrawal-provider'), saveWithdrawalMethodBtn: document.getElementById('save-withdrawal-method-btn'), fullNameInput: document.getElementById('full-name-input'), saveProfileBtn: document.getElementById('save-profile-btn'), goToRegisterLink: document.getElementById('go-to-register-link'), forgotPasswordLink: document.getElementById('forgot-password-link'), sendNewPasswordBtn: document.getElementById('send-new-password-btn'), withdrawalBalance: document.getElementById('withdrawal-balance'), withdrawalAmountInput: document.getElementById('withdrawal-amount-input'), requestWithdrawalBtn: document.getElementById('request-withdrawal-btn'), recentWinnersList: document.getElementById('recent-winners-list'), updateScreen: document.getElementById('update-screen'), updateNowBtn: document.getElementById('update-now-btn'), rememberMeCheck: document.getElementById('remember-me-check'), countryCodeLogin: document.getElementById('country-code-login'), getAppLink: document.getElementById('get-app-link'),
+        // Spinner DOM Elements
+        gameSelectionModal: document.getElementById('game-selection-modal'),
+        selectSlotsBtn: document.getElementById('select-slots-btn'),
+        selectSpinnerBtn: document.getElementById('select-spinner-btn'),
+        spinnerWheel: document.getElementById('spinner-wheel'),
+        spinBtn: document.getElementById('spin-btn'),
+        spinnerBalanceDisplay: document.getElementById('spinner-balance-display'),
+        spinnerBetAmountInput: document.getElementById('spinner-bet-amount'),
     };
     let registrationPhone = '';
+    let currentRotation = 0; // For spinner game
 
     const isNativeApp = () => !!window.Capacitor;
     const showScreen = (id) => { DOM.allScreens.forEach(s => s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); };
@@ -64,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             DOM.userPhoneDisplay.textContent = `+${appState.user.phone.slice(0, 3)}...${appState.user.phone.slice(-4)}`;
             DOM.userBalanceDisplay.textContent = `${balance} ETB`;
             DOM.withdrawalBalance.textContent = `${balance} ETB`;
+            DOM.spinnerBalanceDisplay.textContent = `${balance} ETB`;
             DOM.mainActionBtn.dataset.langKey = 'bet';
             populateSettingsForm();
         } else {
@@ -135,16 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         transactions.forEach(tx => {
             const row = document.createElement('tr');
-            const isPositive = tx.type === 'Deposit' && tx.status === 'Completed';
+            const isPositive = tx.amount > 0;
             let statusText = tx.status;
             let statusClass = tx.status.toLowerCase();
-            if (tx.status === 'Failed' || tx.status === 'Pending') {
-                statusText = 'Canceled';
-                statusClass = 'canceled';
-            }
+            
             row.innerHTML = `
                 <td>${new Date(tx.createdAt).toLocaleDateString()}</td>
-                <td>${tx.type}</td>
+                <td>${tx.method || tx.type}</td>
                 <td class="${isPositive ? 'amount-positive' : 'amount-negative'}">${tx.amount.toFixed(2)} ETB</td>
                 <td><span class="status-${statusClass}">${statusText}</span></td>
             `;
@@ -222,7 +229,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         DOM.logoLink.addEventListener('click', (e) => { e.preventDefault(); hideAllModals(); showScreen('home-screen'); });
-        DOM.mainActionBtn.addEventListener('click', () => { if (appState.isLoggedIn) { showScreen('betting-screen'); fetchSlotData(); fetchAndRenderWinners(); } else { showModal(DOM.loginModal); } });
+        
+        DOM.mainActionBtn.addEventListener('click', () => { 
+            if (appState.isLoggedIn) { 
+                showModal(DOM.gameSelectionModal);
+            } else { 
+                showModal(DOM.loginModal); 
+            } 
+        });
+
+        DOM.selectSlotsBtn.addEventListener('click', () => {
+            hideAllModals();
+            showScreen('betting-screen'); 
+            fetchSlotData(); 
+            fetchAndRenderWinners();
+        });
+
+        DOM.selectSpinnerBtn.addEventListener('click', () => {
+            hideAllModals();
+            showScreen('spinner-screen');
+            updateUI();
+        });
+
         DOM.registerBtnHeader.addEventListener('click', () => { showModal(DOM.registerModal); DOM.registerStep1.classList.remove('hidden'); DOM.registerStep1b.classList.add('hidden'); DOM.registerStep2.classList.add('hidden'); DOM.registerStep3.classList.add('hidden'); });
         DOM.depositBtn.addEventListener('click', () => showModal(DOM.depositModal));
         DOM.settingsBtn.addEventListener('click', () => { showModal(DOM.settingsModal); DOM.settingsTabs.querySelector('[data-tab="profile"]').click(); });
@@ -502,6 +530,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(error.message, 'error');
                 DOM.requestWithdrawalBtn.disabled = false;
                 applyTranslations();
+            }
+        });
+
+        // --- MODIFIED: Spinner Game Logic with Variable Bet ---
+        DOM.spinBtn.addEventListener('click', async () => {
+            const betAmount = parseFloat(DOM.spinnerBetAmountInput.value);
+
+            // Client-side validation
+            if (isNaN(betAmount) || betAmount < 2 || betAmount > 1000) {
+                showToast('Please enter a bet amount between 2 and 1000 ETB.', 'error');
+                return;
+            }
+            if (appState.user.balance < betAmount) {
+                showToast('Insufficient balance for this bet.', 'error');
+                return;
+            }
+
+            DOM.spinBtn.disabled = true;
+            DOM.spinBtn.textContent = 'SPINNING...';
+            
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE_URL}/api/game/spinner/spin`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ betAmount })
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                
+                // Calculate the angle to land on the winning segment
+                const segmentAngle = 360 / 8; // 8 segments
+                const randomOffset = (Math.random() * segmentAngle * 0.8) - (segmentAngle * 0.4);
+                const targetAngle = (result.winningSegmentIndex * segmentAngle) + randomOffset;
+                
+                currentRotation += (360 * 5) + targetAngle;
+                
+                DOM.spinnerWheel.style.transform = `rotate(${currentRotation}deg)`;
+
+                setTimeout(() => {
+                    appState.user.balance = result.newBalance;
+                    updateUI();
+                    
+                    if (result.prize > 0) {
+                        showToast(`You won ${result.prize.toFixed(2)} ETB!`, 'success');
+                    } else {
+                        showToast('Better luck next time!', 'error');
+                    }
+                    
+                    DOM.spinBtn.disabled = false;
+                    DOM.spinBtn.textContent = 'SPIN';
+                }, 4100);
+
+            } catch (error) {
+                showToast(error.message, 'error');
+                DOM.spinBtn.disabled = false;
+                DOM.spinBtn.textContent = 'SPIN';
             }
         });
     };

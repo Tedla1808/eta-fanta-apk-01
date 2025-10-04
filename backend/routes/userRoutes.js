@@ -3,8 +3,6 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
-// Multer is no longer needed
-// const multer = require('multer');
 const path = require('path');
 const axios = require('axios');
 const User = require('../models/user');
@@ -12,7 +10,6 @@ const Bet = require('../models/bet');
 const Transaction = require('../models/transaction');
 const { protect } = require('../middleware/authMiddleware');
 
-// Multer configuration has been removed as it is no longer used.
 
 // === UPDATE USER PROFILE (NAME ONLY) ===
 router.post('/profile', protect, async (req, res) => {
@@ -20,7 +17,6 @@ router.post('/profile', protect, async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'User not found' });
         
-        // Only update the full name from the request body.
         user.fullName = req.body.fullName || user.fullName;
         
         const updatedUser = await user.save();
@@ -28,7 +24,6 @@ router.post('/profile', protect, async (req, res) => {
         res.json({
             message: 'Profile updated successfully',
             fullName: updatedUser.fullName
-            // No longer sending back profilePictureUrl
         });
     } catch (error) {
         console.error('Profile Update Error:', error);
@@ -136,7 +131,11 @@ router.get('/transaction-history', protect, async (req, res) => {
     try {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const transactions = await Transaction.find({ user: req.user.id, createdAt: { $gte: thirtyDaysAgo } }).sort({ createdAt: -1 }).lean();
+        // This query now correctly finds all relevant transactions
+        const transactions = await Transaction.find({ 
+            user: req.user.id, 
+            createdAt: { $gte: thirtyDaysAgo } 
+        }).sort({ createdAt: -1 }).lean();
         res.json(transactions);
     } catch (error) {
         console.error("Fetch Transaction History Error:", error);

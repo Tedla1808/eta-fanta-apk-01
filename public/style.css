@@ -186,3 +186,232 @@ select option {
     text-decoration: none; /* ** THIS REMOVES THE UNDERLINE ** */
     color: var(--primary-bg); /* Ensure text color matches other primary buttons */
 }
+
+#home-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; /* This is the default, but let's be explicit */
+}
+
+/* This new container will manage the layout of the two buttons */
+.home-screen-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Adds space between the "Get App" and "PLAY" buttons */
+}
+
+#get-app-link {
+    padding: 12px 24px; /* A standard button size */
+    font-size: 1.2rem;
+    text-decoration: none; /* ** THIS REMOVES THE UNDERLINE ** */
+    color: var(--primary-bg); /* Ensure text color matches other primary buttons */
+}
+
+/* --- NEW STYLES FOR GAME SELECTION MODAL --- */
+.game-selection-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.game-selection-buttons .btn {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+}
+
+/* --- NEW STYLES FOR SPINNER GAME --- */
+.spinner-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 30px;
+    width: 100%;
+}
+
+.spinner-layout h2 {
+    color: var(--primary-accent);
+}
+
+.wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 30px solid var(--text-light);
+    z-index: 10;
+}
+
+#spinner-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 5px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    /* The conic-gradient creates the segments */
+    background: conic-gradient(
+        #dc3545 0% 12.5%,
+        #00844E 12.5% 25%,
+        #ffc107 25% 37.5%,
+        #3d5a80 37.5% 50%,
+        #dc3545 50% 62.5%,
+        #00844E 62.5% 75%,
+        #ffc107 75% 87.5%,
+        #3d5a80 87.5% 100%
+    );
+    transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); /* Ease-out effect */
+}
+
+.spinner-controls {
+    font-size: 1.2rem;
+}
+
+.spinner-controls .btn {
+    margin-top: 15px;
+}
+
+/* --- All previous styles from the last complete version --- */
+
+/* ... (paste all your existing CSS here) ... */
+
+/* --- NEW STYLES FOR HOME SCREEN LAYOUT --- */
+
+#home-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column; /* This is the default, but let's be explicit */
+}
+
+/* This new container will manage the layout of the two buttons */
+.home-screen-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Adds space between the "Get App" and "PLAY" buttons */
+}
+
+#get-app-link {
+    padding: 12px 24px; /* A standard button size */
+    font-size: 1.2rem;
+    text-decoration: none; /* ** THIS REMOVES THE UNDERLINE ** */
+    color: var(--primary-bg); /* Ensure text color matches other primary buttons */
+}
+
+/* --- NEW STYLES FOR GAME SELECTION MODAL --- */
+.game-selection-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.game-selection-buttons .btn {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+}
+
+/* --- NEW STYLES FOR SPINNER GAME --- */
+.spinner-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 30px;
+    width: 100%;
+}
+
+.spinner-layout h2 {
+    color: var(--primary-accent);
+}
+
+.wheel-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 30px solid var(--text-light);
+    z-index: 10;
+}
+
+#spinner-wheel {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 5px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    /* The conic-gradient creates the segments */
+    background: conic-gradient(
+        #dc3545 0% 12.5%,
+        #00844E 12.5% 25%,
+        #ffc107 25% 37.5%,
+        #3d5a80 37.5% 50%,
+        #dc3545 50% 62.5%,
+        #00844E 62.5% 75%,
+        #ffc107 75% 87.5%,
+        #3d5a80 87.5% 100%
+    );
+    transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1); /* Ease-out effect */
+}
+
+.spinner-controls {
+    font-size: 1.2rem;
+}
+
+.spinner-controls .btn {
+    margin-top: 15px;
+    width: 100%;
+}
+
+/* --- Styles for the new bet amount input --- */
+.spinner-bet-input-group {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 250px;
+}
+
+.spinner-bet-input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+#spinner-bet-amount {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
