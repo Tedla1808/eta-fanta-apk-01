@@ -1,4 +1,4 @@
-// --- backend/routes/gameRoutes.js --- (FINAL, WITH 8 SLOTS AND SPINNER)
+// --- backend/routes/gameRoutes.js --- (FINAL, WITH PROFITABLE SPINNER)
 
 const express = require('express');
 const router = express.Router();
@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 const User = require('../models/user');
 const Bet = require('../models/bet');
 const Game = require('../models/game');
-const Transaction = require('../models/transaction'); // Import Transaction model
+const Transaction = require('../models/transaction');
 const { protect } = require('../middleware/authMiddleware');
 
 const TOTAL_BOXES = 100;
@@ -23,13 +23,13 @@ const SLOT_CONFIG = {
     'slot7':   { cost: 5000, commission: 0.04 },
 };
 
-// ** NEW SPINNER GAME CONFIGURATION **
+// ** MODIFIED PROFITABLE SPINNER GAME CONFIGURATION **
 const SPINNER_OUTCOMES = [
     // Multiplier, the visual segment index on the wheel, and the server-side probability
-    { multiplier: 2.5,  segmentIndex: 1, probability: 0.10 }, // 10% chance of 2.5x
-    { multiplier: 2,    segmentIndex: 3, probability: 0.20 }, // 20% chance of 2x
-    { multiplier: 1.5,  segmentIndex: 5, probability: 0.25 }, // 25% chance of 1.5x
-    { multiplier: 0,    segmentIndex: 0, probability: 0.45 }  // 45% chance of 0x
+    { multiplier: 3.0,  segmentIndex: 1, probability: 0.10 }, // 10% chance of 3x
+    { multiplier: 2.0,  segmentIndex: 3, probability: 0.20 }, // 20% chance of 2x
+    { multiplier: 0.5,  segmentIndex: 5, probability: 0.35 }, // 35% chance to get half back
+    { multiplier: 0,    segmentIndex: 0, probability: 0.35 }  // 35% chance of 0x
 ];
 
 // Helper function to get a weighted random outcome
@@ -42,7 +42,7 @@ const getSpinnerResult = () => {
             return outcome;
         }
     }
-    return SPINNER_OUTCOMES[SPINNER_OUTCOMES.length - 1]; // Fallback just in case
+    return SPINNER_OUTCOMES[SPINNER_OUTCOMES.length - 1]; // Fallback
 };
 // ===================================
 
@@ -132,12 +132,10 @@ router.post('/bet', protect, async (req, res) => {
     }
 });
 
-// === NEW SPINNER GAME ROUTE ===
 router.post('/spinner/spin', protect, async (req, res) => {
     const { betAmount } = req.body;
     const amount = parseFloat(betAmount);
 
-    // 1. Validation
     if (isNaN(amount) || amount < 2 || amount > 1000) {
         return res.status(400).json({ message: "Invalid bet amount. Must be between 2 and 1000." });
     }
@@ -147,49 +145,41 @@ router.post('/spinner/spin', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).session(session);
         if (!user) {
-            // Abort early if user not found
             await session.abortTransaction();
             return res.status(404).json({ message: "User not found." });
         }
         if (user.balance < amount) {
-            // Abort early if not enough balance
             await session.abortTransaction();
             return res.status(400).json({ message: "Insufficient balance." });
         }
 
-        // 2. Debit the bet amount
         user.balance -= amount;
         
-        // Create a transaction record for the bet
         await Transaction.create([{
             user: user._id,
-            type: 'Withdrawal', // A bet is a type of withdrawal from the balance
-            amount: -amount,    // Store as negative for clarity in history
+            type: 'Withdrawal',
+            amount: -amount,
             status: 'Completed',
-            method: 'Spinner Bet' // Specific method for better history tracking
+            method: 'Spinner Bet'
         }], { session });
 
-        // 3. Determine the outcome
         const result = getSpinnerResult();
         const prizeAmount = amount * result.multiplier;
 
-        // 4. Credit the prize amount (if any)
         if (prizeAmount > 0) {
             user.balance += prizeAmount;
-            // Create a transaction record for the win
             await Transaction.create([{
                 user: user._id,
-                type: 'Deposit', // A win is a type of deposit
+                type: 'Deposit',
                 amount: prizeAmount,
                 status: 'Completed',
-                method: 'Spinner Win' // Specific method
+                method: 'Spinner Win'
             }], { session });
         }
         
         await user.save({ session });
         await session.commitTransaction();
 
-        // 5. Send response to client
         res.status(200).json({
             message: "Spin successful!",
             newBalance: user.balance,
