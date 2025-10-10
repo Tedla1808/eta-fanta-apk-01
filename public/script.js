@@ -495,7 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newPassword = DOM.newPasswordInput.value; 
             const confirmNewPassword = DOM.confirmNewPasswordInput.value; 
             const token = localStorage.getItem('token');
-            const errorEl = document.getElementById('change-password-error'); // Ensure we have the error element
+            const errorEl = document.getElementById('change-password-error');
 
             if(errorEl) errorEl.classList.add('hidden');
             
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST', 
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}` // THE FIX IS HERE
+                        'Authorization': `Bearer ${token}`
                     }, 
                     body: JSON.stringify({ currentPassword, newPassword }), 
                 });
