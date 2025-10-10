@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // ======== GLOBAL STATE & CONSTANTS ========
-    const CURRENT_APP_VERSION = '1.2.0'; 
+    const CURRENT_APP_VERSION = '1.0.0'; 
     const appState = { isLoggedIn: false, user: null, language: 'en', betting: { slotsData: {}, selections: {} } };
     const API_BASE_URL = 'https://eta-fanta-apk-01.onrender.com';
     const socket = io(API_BASE_URL);
@@ -34,9 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isNativeApp = () => !!window.Capacitor;
 
-    // --- FAKE PLAYS ANIMATION LOGIC (MODIFIED) ---
     const generateFakePhoneNumber = () => {
-        // Generates a random number between 100 and 999
         const lastThree = Math.floor(100 + Math.random() * 900);
         return `+2519...${lastThree}`;
     };
@@ -53,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const updateFakePlays = () => {
         const list = DOM.fakePlaysList;
-        if (list.children.length < 3) return; // Guard clause
+        if (list.children.length < 3) return;
 
         const itemToExit = list.firstElementChild;
         itemToExit.classList.add('exit');
@@ -63,18 +61,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const newItem = document.createElement('li');
         newItem.textContent = generateFakePhoneNumber();
-        newItem.style.top = '75px'; // Start position for animation (below view)
+        newItem.style.top = '75px';
         list.appendChild(newItem);
 
         setTimeout(() => {
-            newItem.style.top = '50px'; // End position (the last visible slot)
+            newItem.style.top = '50px';
         }, 50);
 
         setTimeout(() => {
             list.removeChild(itemToExit);
         }, 500);
     };
-    // --- END FAKE PLAYS LOGIC ---
 
     const showScreen = (id) => {
         DOM.allScreens.forEach(s => s.classList.add('hidden'));
@@ -491,23 +488,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 showModal(DOM.loginModal);
             } catch (error) { showToast(error.message, 'error'); }
         });
+
+        // --- CHANGE PASSWORD LOGIC (FIXED) ---
         DOM.changePasswordBtn.addEventListener('click', async () => {
-            const currentPassword = DOM.currentPasswordInput.value; const newPassword = DOM.newPasswordInput.value; const confirmNewPassword = DOM.confirmNewPasswordInput.value; const token = localStorage.getItem('token');
-            DOM.changePasswordError.classList.add('hidden');
-            if (!currentPassword || !newPassword || !confirmNewPassword) { DOM.changePasswordError.textContent = 'Please fill all fields.'; DOM.changePasswordError.classList.remove('hidden'); return; }
-            if (newPassword.length < 6) { DOM.changePasswordError.textContent = 'New password must be 6+ characters.'; DOM.changePasswordError.classList.remove('hidden'); return; }
-            if (newPassword !== confirmNewPassword) { DOM.changePasswordError.textContent = 'Passwords do not match.'; DOM.changePasswordError.classList.remove('hidden'); return; }
-            if (!token) { showToast('Authentication error.', 'error'); return; }
+            const currentPassword = DOM.currentPasswordInput.value; 
+            const newPassword = DOM.newPasswordInput.value; 
+            const confirmNewPassword = DOM.confirmNewPasswordInput.value; 
+            const token = localStorage.getItem('token');
+            const errorEl = document.getElementById('change-password-error'); // Ensure we have the error element
+
+            if(errorEl) errorEl.classList.add('hidden');
+            
+            if (!currentPassword || !newPassword || !confirmNewPassword) { 
+                if(errorEl) { errorEl.textContent = 'Please fill all fields.'; errorEl.classList.remove('hidden'); }
+                return; 
+            }
+            if (newPassword.length < 6) { 
+                if(errorEl) { errorEl.textContent = 'New password must be 6+ characters.'; errorEl.classList.remove('hidden'); }
+                return; 
+            }
+            if (newPassword !== confirmNewPassword) { 
+                if(errorEl) { errorEl.textContent = 'Passwords do not match.'; errorEl.classList.remove('hidden'); }
+                return; 
+            }
+            if (!token) { 
+                showToast('Authentication error. Please log in again.', 'error'); 
+                return; 
+            }
+
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword, newPassword }), });
+                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // THE FIX IS HERE
+                    }, 
+                    body: JSON.stringify({ currentPassword, newPassword }), 
+                });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Failed to change password.');
+                
                 showToast(data.message, 'success');
-                DOM.currentPasswordInput.value = ''; DOM.newPasswordInput.value = ''; DOM.confirmNewPasswordInput.value = '';
+                DOM.currentPasswordInput.value = ''; 
+                DOM.newPasswordInput.value = ''; 
+                DOM.confirmNewPasswordInput.value = '';
             } catch (error) {
-                DOM.changePasswordError.textContent = error.message; DOM.changePasswordError.classList.remove('hidden');
+                if(errorEl) { errorEl.textContent = error.message; errorEl.classList.remove('hidden'); }
             }
         });
+
         DOM.slotsContainer.addEventListener('click', (e) => {
             const slotBtn = e.target.closest('.slot-btn');
             if (!slotBtn) return;
