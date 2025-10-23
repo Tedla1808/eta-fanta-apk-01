@@ -26,12 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmPasswordRegister: document.getElementById('confirm-password-register'),
         passwordError: document.getElementById('password-error'),
         goToLoginLink: document.getElementById('go-to-login-link'),
+        passwordLoginInput: document.getElementById('password-login'),
+        togglePasswordIcon: document.getElementById('toggle-password'),
+
+        // Login password elements
+        passwordLoginInput: document.getElementById('password-login'),
+        togglePasswordIcon: document.getElementById('toggle-password'),
 
         // New eye icons for registration
         togglePasswordRegister: document.getElementById('toggle-password-register'),
         toggleConfirmPasswordRegister: document.getElementById('toggle-confirm-password-register'),
-        passwordLoginInput: document.getElementById('password-login'),
-        togglePasswordIcon: document.getElementById('toggle-password'),
+    
         // Other elements
         changePasswordBtn: document.getElementById('change-password-btn'), currentPasswordInput: document.getElementById('current-password'), newPasswordInput: document.getElementById('new-password'), confirmNewPasswordInput: document.getElementById('confirm-new-password'), changePasswordError: document.getElementById('change-password-error'), withdrawalAccountNameInput: document.getElementById('withdrawal-account-name'), withdrawalAccountPhoneInput: document.getElementById('withdrawal-account-phone'), withdrawalProviderSelect: document.getElementById('withdrawal-provider'), saveWithdrawalMethodBtn: document.getElementById('save-withdrawal-method-btn'), fullNameInput: document.getElementById('full-name-input'), saveProfileBtn: document.getElementById('save-profile-btn'), goToRegisterLink: document.getElementById('go-to-register-link'), forgotPasswordLink: document.getElementById('forgot-password-link'), sendNewPasswordBtn: document.getElementById('send-new-password-btn'), withdrawalBalance: document.getElementById('withdrawal-balance'), withdrawalAmountInput: document.getElementById('withdrawal-amount-input'), requestWithdrawalBtn: document.getElementById('request-withdrawal-btn'), recentWinnersList: document.getElementById('recent-winners-list'), updateScreen: document.getElementById('update-screen'), updateNowBtn: document.getElementById('update-now-btn'), rememberMeCheck: document.getElementById('remember-me-check'), countryCodeLogin: document.getElementById('country-code-login'), getAppLink: document.getElementById('get-app-link'),
         gameSelectionModal: document.getElementById('game-selection-modal'),
