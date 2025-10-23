@@ -1,4 +1,4 @@
-// --- START OF FILE script.js ---
+// --- START OF FILE script.js --- (FINAL CORRECTED VERSION)
 
 document.addEventListener('DOMContentLoaded', () => {
     // ======== GLOBAL STATE & CONSTANTS ========
@@ -17,8 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
         om: { getApp: 'Appilikeeshinii keenya argadhaa', register: 'Galmeessi', deposit: 'Maallaqa Olkaa\'i', settings: 'Qindaa\'inoota', logout: 'Bahi', play: 'Taphadhu', bet: 'Ciibsaa', contactUs: 'Nu qunnami', createAccount: 'Akkaawuntii Uumi', userIdPhone: 'ID fayyadamaa (Lakkoofsa Bilbilaa)', sendOtp: 'OTP Ergi', enterVerificationCode: 'Koodii Mirkaneessaa Galchi', setPassword: 'Jecha Darbeessaa Keessi', save: 'Kuusi', login: 'Seenii', password: 'Jecha Darbeessaa', forgotPassword: 'Jecha darbeessaa irraanfattee?', rememberMe: 'Na Yaadadhu', resetPassword: 'Jecha Darbeessaa Haaromsi', sendNewPassword: 'Jecha Darbeessaa Haaraa Ergi', depositFunds: 'Maallaqa Olkaa\'i', depositTo: 'Gara:', verifyDeposit: 'ANNI OLKAA\'EERA', chooseSlot: 'Iddoo Ciibsaa Filadhu', amountToBet: 'Hanga Ciibsamu:', placeBet: 'Ciibsaa Godhi', recentWinners: 'Mo\'attoota Dhiheenyaa', done: 'Xumurameera', exit: 'Bahi', profile: 'Piroofaayilii', withdrawal: 'Maallaqa Baasuu', history: 'Seenaa', about: 'Waa\'ee', profileSettings: 'Qindaa\'inoota Piroofaayilii', saveChanges: 'Jijjiirama Kuusi', manageMethod: 'Mala Maallaqa Baasuu Bulchi', saveMethod: 'Mala Kuusi', reqWithdrawal: 'Maallaqa Baasuu Gaafadhu', txHistory: 'Seenaa Gurgurtaa', aboutApp: 'Waa\'ee Eta Fanta', changePassword: 'Jecha Darbeessaa Jijjiiri' }
     };
     const DOM = {
-        mainActionBtn: document.getElementById('main-action-btn'), allScreens: document.querySelectorAll('.app-screen'), allModals: document.querySelectorAll('.modal-overlay'), loggedOutView: document.getElementById('logged-out-view'), loggedInView: document.getElementById('logged-in-view'), userPhoneDisplay: document.getElementById('user-phone-display'), userBalanceDisplay: document.getElementById('user-balance-display'), registerBtnHeader: document.getElementById('register-btn-header'), depositBtn: document.getElementById('deposit-btn'), settingsBtn: document.getElementById('settings-btn'), logoutBtn: document.getElementById('logout-btn'), logoLink: document.getElementById('logo-link'), registerModal: document.getElementById('register-modal'), loginModal: document.getElementById('login-modal'), forgotPasswordModal: document.getElementById('forgot-password-modal'), depositModal: document.getElementById('deposit-modal'), depositVerificationModal: document.getElementById('deposit-verification-modal'), bettingGridModal: document.getElementById('betting-grid-modal'), settingsModal: document.getElementById('settings-modal'), settingsTabs: document.querySelector('.settings-tabs'), settingsContent: document.querySelectorAll('.settings-content .tab-content'), transactionHistoryTableBody: document.getElementById('transaction-history-table-body'), iHaveDepositedBtn: document.getElementById('i-have-deposited-btn'), verifyDepositBtn: document.getElementById('verify-deposit-btn'), depositorPhoneInput: document.getElementById('depositor-phone-input'), depositAmountInput: document.getElementById('deposit-amount-input'), loginBtnModal: document.getElementById('login-btn-modal'), phoneLoginInput: document.getElementById('phone-login'), togglePasswordIcon: document.getElementById('toggle-password'), passwordLoginInput: document.getElementById('password-login'), slotsContainer: document.querySelector('.slots-container'), bettingGridContainer: document.getElementById('betting-grid-container'), bettingGridTitle: document.getElementById('betting-grid-title'), totalBetAmountEl: document.getElementById('total-bet-amount'), placeBetBtn: document.getElementById('place-bet-btn'), clearBetBtn: document.getElementById('clear-bet-btn'),
-        // Simplified Registration DOM elements
+        mainActionBtn: document.getElementById('main-action-btn'), allScreens: document.querySelectorAll('.app-screen'), allModals: document.querySelectorAll('.modal-overlay'), loggedOutView: document.getElementById('logged-out-view'), loggedInView: document.getElementById('logged-in-view'), userPhoneDisplay: document.getElementById('user-phone-display'), userBalanceDisplay: document.getElementById('user-balance-display'), registerBtnHeader: document.getElementById('register-btn-header'), depositBtn: document.getElementById('deposit-btn'), settingsBtn: document.getElementById('settings-btn'), logoutBtn: document.getElementById('logout-btn'), logoLink: document.getElementById('logo-link'), registerModal: document.getElementById('register-modal'), loginModal: document.getElementById('login-modal'), forgotPasswordModal: document.getElementById('forgot-password-modal'), depositModal: document.getElementById('deposit-modal'), depositVerificationModal: document.getElementById('deposit-verification-modal'), bettingGridModal: document.getElementById('betting-grid-modal'), settingsModal: document.getElementById('settings-modal'), settingsTabs: document.querySelector('.settings-tabs'), settingsContent: document.querySelectorAll('.settings-content .tab-content'), transactionHistoryTableBody: document.getElementById('transaction-history-table-body'), iHaveDepositedBtn: document.getElementById('i-have-deposited-btn'), verifyDepositBtn: document.getElementById('verify-deposit-btn'), depositorPhoneInput: document.getElementById('depositor-phone-input'), depositAmountInput: document.getElementById('deposit-amount-input'), loginBtnModal: document.getElementById('login-btn-modal'), phoneLoginInput: document.getElementById('phone-login'),
+        
+        // --- CLEANED UP DOM OBJECT ---
+        passwordLoginInput: document.getElementById('password-login'),
+        togglePasswordIcon: document.getElementById('toggle-password'),
+        
+        slotsContainer: document.querySelector('.slots-container'), bettingGridContainer: document.getElementById('betting-grid-container'), bettingGridTitle: document.getElementById('betting-grid-title'), totalBetAmountEl: document.getElementById('total-bet-amount'), placeBetBtn: document.getElementById('place-bet-btn'), clearBetBtn: document.getElementById('clear-bet-btn'),
+        
         registerBtnModal: document.getElementById('register-btn-modal'),
         phoneRegister: document.getElementById('phone-register'),
         countryCodeRegister: document.getElementById('country-code-register'),
@@ -26,18 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmPasswordRegister: document.getElementById('confirm-password-register'),
         passwordError: document.getElementById('password-error'),
         goToLoginLink: document.getElementById('go-to-login-link'),
-        passwordLoginInput: document.getElementById('password-login'),
-        togglePasswordIcon: document.getElementById('toggle-password'),
-
-        // Login password elements
-        passwordLoginInput: document.getElementById('password-login'),
-        togglePasswordIcon: document.getElementById('toggle-password'),
-
-        // New eye icons for registration
         togglePasswordRegister: document.getElementById('toggle-password-register'),
         toggleConfirmPasswordRegister: document.getElementById('toggle-confirm-password-register'),
-    
-        // Other elements
+        
         changePasswordBtn: document.getElementById('change-password-btn'), currentPasswordInput: document.getElementById('current-password'), newPasswordInput: document.getElementById('new-password'), confirmNewPasswordInput: document.getElementById('confirm-new-password'), changePasswordError: document.getElementById('change-password-error'), withdrawalAccountNameInput: document.getElementById('withdrawal-account-name'), withdrawalAccountPhoneInput: document.getElementById('withdrawal-account-phone'), withdrawalProviderSelect: document.getElementById('withdrawal-provider'), saveWithdrawalMethodBtn: document.getElementById('save-withdrawal-method-btn'), fullNameInput: document.getElementById('full-name-input'), saveProfileBtn: document.getElementById('save-profile-btn'), goToRegisterLink: document.getElementById('go-to-register-link'), forgotPasswordLink: document.getElementById('forgot-password-link'), sendNewPasswordBtn: document.getElementById('send-new-password-btn'), withdrawalBalance: document.getElementById('withdrawal-balance'), withdrawalAmountInput: document.getElementById('withdrawal-amount-input'), requestWithdrawalBtn: document.getElementById('request-withdrawal-btn'), recentWinnersList: document.getElementById('recent-winners-list'), updateScreen: document.getElementById('update-screen'), updateNowBtn: document.getElementById('update-now-btn'), rememberMeCheck: document.getElementById('remember-me-check'), countryCodeLogin: document.getElementById('country-code-login'), getAppLink: document.getElementById('get-app-link'),
         gameSelectionModal: document.getElementById('game-selection-modal'),
         selectSlotsBtn: document.getElementById('select-slots-btn'),
@@ -54,16 +51,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isNativeApp = () => !!window.Capacitor;
 
-    const generateFakePhoneNumber = () => {
-        const lastThree = Math.floor(100 + Math.random() * 900);
-        return `+2519...${lastThree}`;
-    };
-
     const togglePasswordVisibility = (inputEl, iconEl) => {
+        if (!inputEl || !iconEl) return;
         const isPassword = inputEl.type === 'password';
         inputEl.type = isPassword ? 'text' : 'password';
         iconEl.classList.toggle('fa-eye-slash', !isPassword);
         iconEl.classList.toggle('fa-eye', isPassword);
+    };
+
+    const generateFakePhoneNumber = () => {
+        const lastThree = Math.floor(100 + Math.random() * 900);
+        return `+2519...${lastThree}`;
     };
 
     const initializeFakePlays = () => {
@@ -316,12 +314,13 @@ document.addEventListener('DOMContentLoaded', () => {
         DOM.logoutBtn.addEventListener('click', () => { appState.isLoggedIn = false; appState.user = null; localStorage.removeItem('token'); socket.disconnect().connect(); appState.betting.selections = {}; updateTotalBetAmount(); updateUI(); showScreen('home-screen'); showToast('Logged out successfully.', 'success'); });
         DOM.allModals.forEach(m => m.addEventListener('click', (e) => { if (e.target.classList.contains('modal-overlay') || e.target.classList.contains('close-modal-btn')) hideAllModals(); }));
         DOM.goToLoginLink.addEventListener('click', (e) => { e.preventDefault(); hideAllModals(); showModal(DOM.loginModal); });
+        
+        // --- CORRECTED EVENT LISTENERS ---
         DOM.togglePasswordIcon.addEventListener('click', () => togglePasswordVisibility(DOM.passwordLoginInput, DOM.togglePasswordIcon));
         DOM.togglePasswordRegister.addEventListener('click', () => togglePasswordVisibility(DOM.passwordRegister, DOM.togglePasswordRegister));
         DOM.toggleConfirmPasswordRegister.addEventListener('click', () => togglePasswordVisibility(DOM.confirmPasswordRegister, DOM.toggleConfirmPasswordRegister));
-
+        
         document.getElementById('language-selector').addEventListener('change', (e) => { appState.language = e.target.value; updateUI(); });
-        DOM.togglePasswordIcon.addEventListener('click', () => { DOM.passwordLoginInput.type = DOM.passwordLoginInput.type === 'password' ? 'text' : 'password'; DOM.togglePasswordIcon.classList.toggle('fa-eye-slash'); DOM.togglePasswordIcon.classList.toggle('fa-eye'); });
         
         DOM.settingsTabs.addEventListener('click', (e) => {
             const clickedTab = e.target.closest('.tab-link');
@@ -338,12 +337,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         DOM.iHaveDepositedBtn.addEventListener('click', () => {
-            DOM.depositorPhoneInput.value = '';
-            DOM.depositAmountInput.value = '';
-            DOM.verifyDepositBtn.disabled = false;
-            DOM.verifyDepositBtn.textContent = 'Verify';
-            DOM.depositorPhoneInput.disabled = false;
-            DOM.depositAmountInput.disabled = false;
+            DOM.depositorPhoneInput.value = ''; DOM.depositAmountInput.value = '';
+            DOM.verifyDepositBtn.disabled = false; DOM.verifyDepositBtn.textContent = 'Verify';
+            DOM.depositorPhoneInput.disabled = false; DOM.depositAmountInput.disabled = false;
             applyTranslations();
             hideAllModals();
             showModal(DOM.depositVerificationModal);
@@ -354,10 +350,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const amount = DOM.depositAmountInput.value;
             const token = localStorage.getItem('token');
             if (!depositorPhone || !amount) { return showToast('Please enter both phone and amount.', 'error'); }
-            DOM.verifyDepositBtn.disabled = true;
-            DOM.verifyDepositBtn.textContent = 'Verifying...';
-            DOM.depositorPhoneInput.disabled = true;
-            DOM.depositAmountInput.disabled = true;
+            DOM.verifyDepositBtn.disabled = true; DOM.verifyDepositBtn.textContent = 'Verifying...';
+            DOM.depositorPhoneInput.disabled = true; DOM.depositAmountInput.disabled = true;
             try {
                 const response = await fetch(`${API_BASE_URL}/api/user/request-deposit-verification`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ depositorPhone, amount }) });
                 const data = await response.json();
@@ -365,10 +359,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(data.message, 'success');
             } catch (error) {
                 showToast(error.message, 'error');
-                DOM.verifyDepositBtn.disabled = false;
-                DOM.verifyDepositBtn.textContent = 'Verify';
-                DOM.depositorPhoneInput.disabled = false;
-                DOM.depositAmountInput.disabled = false;
+                DOM.verifyDepositBtn.disabled = false; DOM.verifyDepositBtn.textContent = 'Verify';
+                DOM.depositorPhoneInput.disabled = false; DOM.depositAmountInput.disabled = false;
             }
         });
 
@@ -391,12 +383,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.removeItem('rememberedUserCountryCode');
                 }
 
-                appState.isLoggedIn = true;
-                appState.user = data.user;
+                appState.isLoggedIn = true; appState.user = data.user;
                 localStorage.setItem('token', data.token);
                 socket.emit('authenticate', data.token);
-                hideAllModals();
-                updateUI();
+                hideAllModals(); updateUI();
                 showToast('Login successful!', 'success');
             } catch (error) { showToast(error.message, 'error'); }
         });
@@ -424,11 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!token) return showToast('Authentication Error', 'error');
             const fullName = DOM.fullNameInput.value;
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ fullName })
-                });
+                const response = await fetch(`${API_BASE_URL}/api/user/profile`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ fullName }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
                 appState.user.fullName = data.fullName;
@@ -455,7 +441,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (error) { showToast(error.message, 'error'); }
         });
 
-        // --- NEW SIMPLIFIED REGISTRATION LOGIC ---
         DOM.registerBtnModal.addEventListener('click', async () => {
             const phone = DOM.countryCodeRegister.value.replace('+', '') + DOM.phoneRegister.value;
             const password = DOM.passwordRegister.value;
@@ -474,14 +459,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ phone, password })
-                });
+                const response = await fetch(`${API_BASE_URL}/api/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone, password }) });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message);
-                
                 showToast(data.message, 'success');
                 hideAllModals();
                 showModal(DOM.loginModal);
@@ -489,53 +469,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(error.message, 'error');
             }
         });
-
-        // --- OLD REGISTRATION LOGIC REMOVED ---
         
         DOM.changePasswordBtn.addEventListener('click', async () => {
-            const currentPassword = DOM.currentPasswordInput.value; 
-            const newPassword = DOM.newPasswordInput.value; 
-            const confirmNewPassword = DOM.confirmNewPasswordInput.value; 
-            const token = localStorage.getItem('token');
-            const errorEl = document.getElementById('change-password-error');
-
-            if(errorEl) errorEl.classList.add('hidden');
-            
-            if (!currentPassword || !newPassword || !confirmNewPassword) { 
-                if(errorEl) { errorEl.textContent = 'Please fill all fields.'; errorEl.classList.remove('hidden'); }
-                return; 
-            }
-            if (newPassword.length < 6) { 
-                if(errorEl) { errorEl.textContent = 'New password must be 6+ characters.'; errorEl.classList.remove('hidden'); }
-                return; 
-            }
-            if (newPassword !== confirmNewPassword) { 
-                if(errorEl) { errorEl.textContent = 'Passwords do not match.'; errorEl.classList.remove('hidden'); }
-                return; 
-            }
-            if (!token) { 
-                showToast('Authentication error. Please log in again.', 'error'); 
-                return; 
-            }
-
+            const currentPassword = DOM.currentPasswordInput.value; const newPassword = DOM.newPasswordInput.value; const confirmNewPassword = DOM.confirmNewPasswordInput.value; const token = localStorage.getItem('token');
+            if(DOM.changePasswordError) DOM.changePasswordError.classList.add('hidden');
+            if (!currentPassword || !newPassword || !confirmNewPassword) { if(DOM.changePasswordError) { DOM.changePasswordError.textContent = 'Please fill all fields.'; DOM.changePasswordError.classList.remove('hidden'); } return; }
+            if (newPassword.length < 6) { if(DOM.changePasswordError) { DOM.changePasswordError.textContent = 'New password must be 6+ characters.'; DOM.changePasswordError.classList.remove('hidden'); } return; }
+            if (newPassword !== confirmNewPassword) { if(DOM.changePasswordError) { DOM.changePasswordError.textContent = 'Passwords do not match.'; DOM.changePasswordError.classList.remove('hidden'); } return; }
+            if (!token) { showToast('Authentication error.', 'error'); return; }
             try {
-                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { 
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }, 
-                    body: JSON.stringify({ currentPassword, newPassword }), 
-                });
+                const response = await fetch(`${API_BASE_URL}/api/user/change-password`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ currentPassword, newPassword }), });
                 const data = await response.json();
                 if (!response.ok) throw new Error(data.message || 'Failed to change password.');
-                
                 showToast(data.message, 'success');
-                DOM.currentPasswordInput.value = ''; 
-                DOM.newPasswordInput.value = ''; 
-                DOM.confirmNewPasswordInput.value = '';
+                DOM.currentPasswordInput.value = ''; DOM.newPasswordInput.value = ''; DOM.confirmNewPasswordInput.value = '';
             } catch (error) {
-                if(errorEl) { errorEl.textContent = error.message; errorEl.classList.remove('hidden'); }
+                if(DOM.changePasswordError) { DOM.changePasswordError.textContent = error.message; DOM.changePasswordError.classList.remove('hidden'); }
             }
         });
         
